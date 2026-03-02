@@ -23,11 +23,28 @@ namespace MLambda.Actors.Abstraction.Context
     public interface IContext
     {
         /// <summary>
+        /// Gets the self address.
+        /// </summary>
+        IAddress Self { get; }
+
+        /// <summary>
         /// Creates the actor proxy.
         /// </summary>
         /// <typeparam name="T">The type of the actor.</typeparam>
         /// <returns>The actor proxy.</returns>
         IObservable<IAddress> Spawn<T>()
             where T : IActor;
+
+        /// <summary>
+        /// Watches an actor for termination.
+        /// </summary>
+        /// <param name="address">The address of the actor to watch.</param>
+        void Watch(IAddress address);
+
+        /// <summary>
+        /// Stops watching an actor for termination.
+        /// </summary>
+        /// <param name="address">The address of the actor to unwatch.</param>
+        void Unwatch(IAddress address);
     }
 }

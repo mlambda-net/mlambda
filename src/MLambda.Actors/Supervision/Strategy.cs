@@ -16,6 +16,7 @@
 namespace MLambda.Actors.Supervision
 {
     using System;
+    using MLambda.Actors.Abstraction.Core;
     using MLambda.Actors.Abstraction.Supervision;
 
     /// <summary>
@@ -31,6 +32,17 @@ namespace MLambda.Actors.Supervision
         public static ISupervisor OneForOne(Func<Decider, Decider> builder)
         {
             return new OneForOne(builder(new Decider()));
+        }
+
+        /// <summary>
+        /// Create an all for one supervision.
+        /// </summary>
+        /// <param name="builder">The decider builder.</param>
+        /// <param name="bucket">The bucket.</param>
+        /// <returns>The supervisor.</returns>
+        public static ISupervisor AllForOne(Func<Decider, Decider> builder, IBucket bucket)
+        {
+            return new AllForOne(builder(new Decider()), bucket);
         }
     }
 }

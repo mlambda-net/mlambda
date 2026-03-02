@@ -1,14 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <Title>MLambda Saga Abstraction</Title>
         <Authors>MLambda</Authors>
         <Description>MLambda Saga Abstraction</Description>
         <Copyright>All Rights reserved.</Copyright>
         <PackageProjectUrl>https://actors.mlambda.net</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/RoyGI/MLambda/blob/master/LICENSE</PackageLicenseUrl>
-        <PackageIconUrl>https://actors.mlambda.net/site/assets/mactor.png</PackageIconUrl>
         <RepositoryUrl>https://github.com/RoyGI/MLambda</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>Reactive actor model</PackageTags>
@@ -21,9 +18,11 @@
         <DocumentationFile>bin\Release\MLambda.Saga.Abstraction.xml</DocumentationFile>
     </PropertyGroup>
     <ItemGroup>
-      <AdditionalFiles Include="..\..\stylecop.json">
-        <Link>stylecop.json</Link>
-      </AdditionalFiles>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="All" />
     </ItemGroup>
-    <Import Project="..\..\.paket\Paket.Restore.targets" />
+    <ItemGroup>
+        <AdditionalFiles Include="..\..\stylecop.json">
+            <Link>stylecop.json</Link>
+        </AdditionalFiles>
+    </ItemGroup>
 </Project>

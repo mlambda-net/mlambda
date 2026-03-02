@@ -16,6 +16,7 @@
 namespace MLambda.Actors.Test.Steps
 {
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
     using MLambda.Actors.Abstraction.Context;
     using MLambda.Actors.Guardian.Messages;
     using MLambda.Actors.Test.Actors;
@@ -38,7 +39,7 @@ namespace MLambda.Actors.Test.Steps
         }
 
         [Given(@"an user actor")]
-        public async void GivenAnUserActor()
+        public async Task GivenAnUserActor()
         {
             await this.user.Self.Send(new object());
             var count = await this.system.Self.Send<ProcessCount, int>(new ProcessCount());
@@ -46,7 +47,7 @@ namespace MLambda.Actors.Test.Steps
         }
 
         [When(@"the console actor is called")]
-        public async void WhenTheConsoleActorIsCalled()
+        public async Task WhenTheConsoleActorIsCalled()
         {
             using (var console = await this.user.Spawn<ConsoleActor>())
             {

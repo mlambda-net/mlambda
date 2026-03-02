@@ -16,6 +16,7 @@
 namespace MLambda.Actors
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive;
@@ -32,7 +33,7 @@ namespace MLambda.Actors
     {
         private readonly IDependency dependency;
 
-        private readonly IDictionary<Guid, IProcess> processes;
+        private readonly ConcurrentDictionary<Guid, IProcess> processes;
 
         private Guardians guardians;
 
@@ -43,7 +44,7 @@ namespace MLambda.Actors
         public Bucket(IDependency dependency)
         {
             this.dependency = dependency;
-            this.processes = new Dictionary<Guid, IProcess>();
+            this.processes = new ConcurrentDictionary<Guid, IProcess>();
         }
 
         /// <summary>
@@ -106,9 +107,11 @@ namespace MLambda.Actors
         /// <returns>The unit.</returns>
         public IObservable<Unit> Release(Guid id)
         {
-            var process = this.processes[id];
-            process.Stop();
-            this.processes.Remove(id);
+            if (this.processes.TryRemove(id, out var process))
+            {
+                process.Stop();
+            }
+
             return Observable.Return(Unit.Default);
         }
 
@@ -123,7 +126,7 @@ namespace MLambda.Actors
         /// Counts the number of the process.
         /// </summary>
         /// <returns>the count of process.</returns>
-        public IObservable<int> Count() => Observable.Return(this.processes.Count());
+        public IObservable<int> Count() => Observable.Return(this.processes.Count);
 
         /// <summary>
         /// Gets the parent of the current process.
@@ -144,7 +147,7 @@ namespace MLambda.Actors
         {
             var job = new WorkUnit(this.dependency, typeof(T));
             var process = new Process(this, parent, job);
-            this.processes.Add(process.Id, process);
+            this.processes.TryAdd(process.Id, process);
             process.Start();
             return process;
         }

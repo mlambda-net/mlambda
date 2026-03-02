@@ -42,6 +42,12 @@ namespace MLambda.Actors.Test.Config
             services.AddActor();
             services.AddActor<ConsoleActor>();
             services.AddActor<SupervisionActor>();
+            services.AddActor<BecomeActor>();
+            services.AddActor<StashActor>();
+            services.AddActor<WatcherActor>();
+            services.AddActor<AllForOneActor>();
+            services.AddActor<LifecycleActor>();
+            services.AddActor<CounterActor>();
             var provider = services.BuildServiceProvider();
 
             var builder = new ContainerBuilder();

@@ -18,6 +18,7 @@ namespace MLambda.Actors.Test.Steps
     using System.Collections.Generic;
     using System.Linq;
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
     using MLambda.Actors.Abstraction.Context;
     using MLambda.Actors.Guardian.Messages;
     using MLambda.Actors.Test.Actors;
@@ -41,7 +42,7 @@ namespace MLambda.Actors.Test.Steps
         }
 
         [Given(@"a demo actor")]
-        public async void GivenADemoActor()
+        public async Task GivenADemoActor()
         {
             await this.system.Self.Send(new object());
             await this.user.Self.Send(new object());
@@ -54,7 +55,7 @@ namespace MLambda.Actors.Test.Steps
         }
 
         [When(@"Kill the process")]
-        public async void WhenKillTheProcess()
+        public async Task WhenKillTheProcess()
         {
             var processes =
                 await this.system.Self.Send<ProcessFilter, IEnumerable<Pid>>(new ProcessFilter("/user/console"));

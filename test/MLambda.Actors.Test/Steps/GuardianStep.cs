@@ -16,6 +16,7 @@
 namespace MLambda.Actors.Test.Steps
 {
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
     using MLambda.Actors.Abstraction;
     using MLambda.Actors.Abstraction.Core;
     using TechTalk.SpecFlow;
@@ -46,13 +47,13 @@ namespace MLambda.Actors.Test.Steps
         }
 
         [When(@"Send a Stop Message")]
-        public async void WhenSendAStopMessage()
+        public async Task WhenSendAStopMessage()
         {
             await this.scenario.Get<IAddress>("context").Send(new object());
         }
 
         [When(@"Send a Not Valid Message")]
-        public async void WhenSendANotValidMessage()
+        public async Task WhenSendANotValidMessage()
         {
             await this.scenario.Get<IAddress>("context").Send(new object());
         }

@@ -24,6 +24,11 @@ namespace MLambda.Actors.Abstraction
     public interface IAddress : IDisposable
     {
         /// <summary>
+        /// Gets the unique identifier of the address.
+        /// </summary>
+        Guid Id { get; }
+
+        /// <summary>
         /// Tells the message to the actor.
         /// </summary>
         /// <param name="message">the message.</param>

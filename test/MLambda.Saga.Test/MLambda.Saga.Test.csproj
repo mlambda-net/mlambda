@@ -1,21 +1,34 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <IsPackable>false</IsPackable>
-        <RunCodeAnalysis>false</RunCodeAnalysis>
     </PropertyGroup>
     <ItemGroup>
-      <Content Include="Saga.feature" />
+        <Content Include="Saga.feature" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\..\src\MLambda.Saga.Abstraction\MLambda.Saga.Abstraction.csproj" />
-      <ProjectReference Include="..\..\src\MLambda.Saga\MLambda.Saga.csproj" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+        <PackageReference Include="NUnit" Version="4.3.2" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+        <PackageReference Include="Shouldly" Version="4.2.1" />
+        <PackageReference Include="Moq" Version="4.20.72" />
+        <PackageReference Include="Autofac" Version="6.5.0" />
+        <PackageReference Include="SpecFlow" Version="3.9.74" />
+        <PackageReference Include="SpecFlow.Autofac" Version="3.9.74" />
+        <PackageReference Include="SpecFlow.NUnit" Version="3.9.74" />
+        <PackageReference Include="SpecFlow.Tools.MsBuild.Generation" Version="3.9.74" />
+        <PackageReference Include="coverlet.collector" Version="6.0.2" />
+        <PackageReference Include="coverlet.msbuild" Version="6.0.2" />
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="All" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\MLambda.Saga.Abstraction\MLambda.Saga.Abstraction.csproj" />
+        <ProjectReference Include="..\..\src\MLambda.Saga\MLambda.Saga.csproj" />
     </ItemGroup>
     <ItemGroup>
         <AdditionalFiles Include="..\..\stylecop.json">
             <Link>stylecop.json</Link>
         </AdditionalFiles>
     </ItemGroup>
-    <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

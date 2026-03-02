@@ -28,6 +28,11 @@ namespace MLambda.Actors.Abstraction
     public abstract class Actor : IActor
     {
         /// <summary>
+        /// The current receive handler override set by Become.
+        /// </summary>
+        private Func<object, Behavior> currentReceiveHandler;
+
+        /// <summary>
         /// Gets The default value.
         /// </summary>
         public static IObservable<object> Default => Observable.Return((object)Unit.Default);
@@ -46,6 +51,11 @@ namespace MLambda.Actors.Abstraction
         /// Gets or sets the supervisor strategy.
         /// </summary>
         public virtual ISupervisor Supervisor { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets the stash for storing messages temporarily.
+        /// </summary>
+        public IStash Stash { get; set; }
 
         /// <summary>
         /// The Behavior handler for the message.
@@ -177,11 +187,66 @@ namespace MLambda.Actors.Abstraction
             ctx => apply(ctx, a, b, c, d).Map(val => (object)val);
 
         /// <summary>
+        /// Switches the actor behavior to a new receive handler.
+        /// The new handler will be used to process all subsequent messages
+        /// until <see cref="Unbecome"/> is called.
+        /// </summary>
+        /// <param name="receiveHandler">The new receive handler function.</param>
+        public void Become(Func<object, Behavior> receiveHandler) => this.currentReceiveHandler = receiveHandler;
+
+        /// <summary>
+        /// Reverts the actor behavior to the default receive handler.
+        /// </summary>
+        public void Unbecome() => this.currentReceiveHandler = null;
+
+        /// <summary>
+        /// Unstashes the most recently stashed message.
+        /// </summary>
+        public void Unstash() => this.Stash?.Unstash();
+
+        /// <summary>
+        /// Unstashes all stashed messages.
+        /// </summary>
+        public void UnstashAll() => this.Stash?.UnstashAll();
+
+        /// <summary>
+        /// Called before the actor starts processing messages.
+        /// </summary>
+        public virtual void PreStart()
+        {
+        }
+
+        /// <summary>
+        /// Called after the actor has been stopped.
+        /// </summary>
+        public virtual void PostStop()
+        {
+        }
+
+        /// <summary>
+        /// Called before the actor is restarted due to an exception.
+        /// </summary>
+        /// <param name="reason">The exception that caused the restart.</param>
+        public virtual void PreRestart(Exception reason)
+        {
+        }
+
+        /// <summary>
+        /// Called after the actor has been restarted due to an exception.
+        /// </summary>
+        /// <param name="reason">The exception that caused the restart.</param>
+        public virtual void PostRestart(Exception reason)
+        {
+        }
+
+        /// <summary>
         /// Receives the message.
         /// </summary>
         /// <param name="data">the data.</param>
         /// <returns>The match rules.</returns>
-        Behavior IActor.Receive(object data) => this.Receive(data);
+        Behavior IActor.Receive(object data) => this.currentReceiveHandler != null
+            ? this.currentReceiveHandler(data)
+            : this.Receive(data);
 
         /// <summary>
         /// Receives the message.

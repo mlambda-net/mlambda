@@ -37,10 +37,37 @@ namespace MLambda.Actors.Abstraction
         ISupervisor Supervisor { get; }
 
         /// <summary>
+        /// Gets or sets the stash for storing messages temporarily.
+        /// </summary>
+        IStash Stash { get; set; }
+
+        /// <summary>
         /// Receives the message.
         /// </summary>
         /// <param name="data">the data.</param>
         /// <returns>The match rules.</returns>
         Behavior Receive(object data);
+
+        /// <summary>
+        /// Called before the actor starts processing messages.
+        /// </summary>
+        void PreStart();
+
+        /// <summary>
+        /// Called after the actor has been stopped.
+        /// </summary>
+        void PostStop();
+
+        /// <summary>
+        /// Called before the actor is restarted due to an exception.
+        /// </summary>
+        /// <param name="reason">The exception that caused the restart.</param>
+        void PreRestart(Exception reason);
+
+        /// <summary>
+        /// Called after the actor has been restarted due to an exception.
+        /// </summary>
+        /// <param name="reason">The exception that caused the restart.</param>
+        void PostRestart(Exception reason);
     }
 }

@@ -16,22 +16,28 @@
 namespace MLambda.Actors
 {
     using System;
+    using System.Linq;
     using System.Reactive.Linq;
     using MLambda.Actors.Abstraction;
     using MLambda.Actors.Abstraction.Context;
+    using MLambda.Actors.Abstraction.Core;
 
     /// <summary>
     /// The actor context task.
     /// </summary>
     public class Context : IMainContext
     {
+        private readonly IBucket bucket;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Context"/> class.
         /// </summary>
         /// <param name="process">the process.</param>
-        public Context(IProcess process)
+        /// <param name="bucket">the bucket.</param>
+        public Context(IProcess process, IBucket bucket)
         {
             this.Process = process;
+            this.bucket = bucket;
         }
 
         /// <summary>
@@ -45,6 +51,11 @@ namespace MLambda.Actors
         public IProcess Process { get; }
 
         /// <summary>
+        /// Gets the self address.
+        /// </summary>
+        public IAddress Self => this.Process.Current.Address;
+
+        /// <summary>
         /// Spawns a new actor.
         /// </summary>
         /// <typeparam name="T">the type of the actor.</typeparam>
@@ -53,6 +64,27 @@ namespace MLambda.Actors
             where T : IActor
         {
             return Observable.Return(this.Process.Spawn<T>());
+        }
+
+        /// <summary>
+        /// Watches an actor for termination. Registers self to receive
+        /// a Terminated message when the target actor stops.
+        /// </summary>
+        /// <param name="address">The address of the actor to watch.</param>
+        public void Watch(IAddress address)
+        {
+            var target = this.bucket.Filter(p => p.Current.Address.Id == address.Id).FirstOrDefault();
+            target?.Watch(this.Self);
+        }
+
+        /// <summary>
+        /// Stops watching an actor for termination.
+        /// </summary>
+        /// <param name="address">The address of the actor to unwatch.</param>
+        public void Unwatch(IAddress address)
+        {
+            var target = this.bucket.Filter(p => p.Current.Address.Id == address.Id).FirstOrDefault();
+            target?.Unwatch(this.Self);
         }
     }
 }

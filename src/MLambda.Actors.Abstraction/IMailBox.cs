@@ -28,6 +28,11 @@ namespace MLambda.Actors.Abstraction
         Guid Id { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the mailbox is stopped.
+        /// </summary>
+        bool IsStopped { get; }
+
+        /// <summary>
         /// Push the message in the mail box.
         /// </summary>
         /// <param name="message">The future message.</param>
@@ -48,5 +53,15 @@ namespace MLambda.Actors.Abstraction
         /// Cleans the mailbox.
         /// </summary>
         void Clean();
+
+        /// <summary>
+        /// Suspends message delivery.
+        /// </summary>
+        void Suspend();
+
+        /// <summary>
+        /// Resumes message delivery.
+        /// </summary>
+        void Resume();
     }
 }

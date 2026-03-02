@@ -43,6 +43,11 @@ namespace MLambda.Actors
         ~Address() => this.Dispose(false);
 
         /// <summary>
+        /// Gets the unique identifier of the address.
+        /// </summary>
+        public Guid Id => this.mailBox.Id;
+
+        /// <summary>
         /// Tells to the actor the message.
         /// </summary>
         /// <param name="message">The emit message.</param>

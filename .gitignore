@@ -358,3 +358,5 @@ paket.lock
 .paket/
 
 package-lock.json
+
+.claude/

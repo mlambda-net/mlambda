@@ -16,6 +16,8 @@
 namespace MLambda.Actors
 {
     using System;
+    using System.Collections.Concurrent;
+    using System.Reactive.Linq;
     using System.Threading.Tasks;
     using MLambda.Actors.Abstraction;
     using MLambda.Actors.Abstraction.Core;
@@ -26,6 +28,10 @@ namespace MLambda.Actors
     public class Process : IProcess
     {
         private readonly IBucket bucket;
+
+        private readonly ConcurrentDictionary<Guid, IAddress> watchers;
+
+        private MessageStash stash;
 
         private LifeCycle state;
 
@@ -38,6 +44,7 @@ namespace MLambda.Actors
         public Process(IBucket bucket, IProcess parent, IWorkUnit current)
         {
             this.bucket = bucket;
+            this.watchers = new ConcurrentDictionary<Guid, IAddress>();
             this.Parent = parent?.Current;
             this.Route = $"{parent?.Route}{current.Name}";
             this.Current = current;
@@ -127,9 +134,11 @@ namespace MLambda.Actors
         public void Stop()
         {
             this.state = LifeCycle.Stopping;
+            this.Current.Actor.PostStop();
             this.Current.Stop();
             this.OnPostStop?.Invoke();
             this.state = LifeCycle.Terminated;
+            this.NotifyWatchers();
         }
 
         /// <summary>
@@ -139,6 +148,9 @@ namespace MLambda.Actors
         {
             this.state = LifeCycle.Starting;
             this.Current.Start(this.Receive);
+            this.stash = new MessageStash(this.Current.MailBox);
+            this.Current.Actor.Stash = this.stash;
+            this.Current.Actor.PreStart();
             this.state = LifeCycle.Receiving;
         }
 
@@ -147,7 +159,12 @@ namespace MLambda.Actors
         /// </summary>
         public void Resume()
         {
-            ////TODO
+            if (this.state == LifeCycle.Receiving)
+            {
+                return;
+            }
+
+            this.state = LifeCycle.Receiving;
         }
 
         /// <summary>
@@ -157,17 +174,19 @@ namespace MLambda.Actors
         public void Escalate(Exception exception) =>
             this.Parent.Supervisor.Handle(exception, this.bucket.Parent(this));
 
-
         /// <summary>
         /// Restart the actor model.
         /// </summary>
         public void Restart()
         {
             this.state = LifeCycle.Stopping;
-            //// this.PreRestart();
+            this.Current.Actor.PreRestart(null);
+            this.Current.MailBox.Clean();
             this.state = LifeCycle.Restarting;
-            //// this.PostRestart();
-            this.Start();
+            this.Current.Stop();
+            this.Current.Start(this.Receive);
+            this.Current.Actor.PostRestart(null);
+            this.state = LifeCycle.Receiving;
         }
 
         /// <summary>
@@ -179,7 +198,39 @@ namespace MLambda.Actors
             where T : IActor =>
             this.bucket.Spawn<T>(this);
 
-        private async Task Receive(IMessage message) =>
-            await this.Current.Supervisor.Apply(message)(new Context(this));
+        /// <summary>
+        /// Registers a watcher for this process's termination.
+        /// </summary>
+        /// <param name="watcher">The address of the watching actor.</param>
+        public void Watch(IAddress watcher)
+        {
+            this.watchers.TryAdd(watcher.Id, watcher);
+        }
+
+        /// <summary>
+        /// Removes a watcher for this process's termination.
+        /// </summary>
+        /// <param name="watcher">The address of the watching actor.</param>
+        public void Unwatch(IAddress watcher)
+        {
+            this.watchers.TryRemove(watcher.Id, out _);
+        }
+
+        private void NotifyWatchers()
+        {
+            var terminated = new Terminated(this.Current.Address);
+            foreach (var watcher in this.watchers.Values)
+            {
+                watcher.Send(terminated).Subscribe();
+            }
+
+            this.watchers.Clear();
+        }
+
+        private async Task Receive(IMessage message)
+        {
+            this.stash?.SetCurrent(message);
+            await this.Current.Supervisor.Apply(message)(new Context(this, this.bucket));
+        }
     }
 }

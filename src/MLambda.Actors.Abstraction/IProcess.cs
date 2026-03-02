@@ -80,5 +80,17 @@ namespace MLambda.Actors.Abstraction
         /// </summary>
         /// <param name="exception">The exception.</param>
         void Escalate(Exception exception);
+
+        /// <summary>
+        /// Registers a watcher for this process's termination.
+        /// </summary>
+        /// <param name="watcher">The address of the watching actor.</param>
+        void Watch(IAddress watcher);
+
+        /// <summary>
+        /// Removes a watcher for this process's termination.
+        /// </summary>
+        /// <param name="watcher">The address of the watching actor.</param>
+        void Unwatch(IAddress watcher);
     }
 }

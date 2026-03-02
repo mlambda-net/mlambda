@@ -35,6 +35,8 @@ namespace MLambda.Actors
 
         private LifeCycle state;
 
+        private bool suspended;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MailBox"/> class.
         /// </summary>
@@ -70,6 +72,20 @@ namespace MLambda.Actors
         public Guid Id { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the mailbox is stopped.
+        /// </summary>
+        public bool IsStopped
+        {
+            get
+            {
+                lock (this.locker)
+                {
+                    return this.state == LifeCycle.Disposed;
+                }
+            }
+        }
+
+        /// <summary>
         /// Add the message to the mailbox.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -77,15 +93,13 @@ namespace MLambda.Actors
         {
             lock (this.locker)
             {
-                if (this.state == LifeCycle.Running)
-                {
-                    this.messages.Enqueue(message);
-                    Monitor.Pulse(this.locker);
-                }
-                else
+                if (this.state == LifeCycle.Disposed)
                 {
                     throw new ObjectDisposedException(nameof(MailBox));
                 }
+
+                this.messages.Enqueue(message);
+                Monitor.Pulse(this.locker);
             }
         }
 
@@ -97,9 +111,14 @@ namespace MLambda.Actors
         {
             lock (this.locker)
             {
-                while (!this.messages.Any())
+                while (this.state == LifeCycle.Running && (!this.messages.Any() || this.suspended))
                 {
                     Monitor.Wait(this.locker);
+                }
+
+                if (this.state == LifeCycle.Disposed)
+                {
+                    return null;
                 }
 
                 return this.messages.Dequeue();
@@ -109,9 +128,42 @@ namespace MLambda.Actors
         /// <inheritdoc />
         public void Stop()
         {
+            lock (this.locker)
+            {
+                if (this.state == LifeCycle.Disposed)
+                {
+                    return;
+                }
+
+                this.state = LifeCycle.Disposed;
+                this.messages.Clear();
+                Monitor.PulseAll(this.locker);
+            }
+
             this.collector.Collect(this.Id);
-            this.state = LifeCycle.Disposed;
-            this.messages.Clear();
+        }
+
+        /// <summary>
+        /// Suspends message delivery.
+        /// </summary>
+        public void Suspend()
+        {
+            lock (this.locker)
+            {
+                this.suspended = true;
+            }
+        }
+
+        /// <summary>
+        /// Resumes message delivery.
+        /// </summary>
+        public void Resume()
+        {
+            lock (this.locker)
+            {
+                this.suspended = false;
+                Monitor.PulseAll(this.locker);
+            }
         }
 
         /// <summary>
@@ -119,7 +171,10 @@ namespace MLambda.Actors
         /// </summary>
         public void Clean()
         {
-            this.messages.Clear();
+            lock (this.locker)
+            {
+                this.messages.Clear();
+            }
         }
     }
 }

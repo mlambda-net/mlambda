@@ -40,10 +40,13 @@ namespace MLambda.Actors.Core
             services.AddScoped<ICollector, Collector>();
             services.AddScoped(provider => provider.GetService<IBucket>() as IUserContext);
             services.AddScoped(provider => provider.GetService<IBucket>() as ISystemContext);
+            services.AddSingleton<IEventStream, EventStream>();
             services.AddSingleton(Strategy.OneForOne(decider => decider.Default(Directive.Resume)));
             services.AddTransient<RootActor>();
             services.AddTransient<SystemActor>();
             services.AddTransient<UserActor>();
+            services.AddTransient<DeadLetterActor>();
+            services.AddTransient<TempActor>();
             services.AddTransient<IMainContext, Context>();
             services.AddTransient<IProcess, Process>();
             services.AddTransient<IMailBox, MailBox>();

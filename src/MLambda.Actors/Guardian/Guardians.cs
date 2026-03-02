@@ -39,6 +39,16 @@ namespace MLambda.Actors.Guardian
         public IProcess User { get; private set; }
 
         /// <summary>
+        /// Gets the dead letters process.
+        /// </summary>
+        public IProcess DeadLetters { get; private set; }
+
+        /// <summary>
+        /// Gets the temp process.
+        /// </summary>
+        public IProcess Temp { get; private set; }
+
+        /// <summary>
         /// Loads the guardians actors.
         /// </summary>
         /// <param name="bucket">the bucket of the process.</param>
@@ -48,9 +58,13 @@ namespace MLambda.Actors.Guardian
             this.Root = new Process(bucket, null, new WorkUnit(dependency, typeof(RootActor)));
             this.User = new Process(bucket, this.Root, new WorkUnit(dependency, typeof(UserActor)));
             this.System = new Process(bucket, this.Root, new WorkUnit(dependency, typeof(SystemActor)));
+            this.DeadLetters = new Process(bucket, this.System, new WorkUnit(dependency, typeof(DeadLetterActor)));
+            this.Temp = new Process(bucket, this.Root, new WorkUnit(dependency, typeof(TempActor)));
             this.Root.Start();
             this.User.Start();
             this.System.Start();
+            this.DeadLetters.Start();
+            this.Temp.Start();
         }
     }
 }

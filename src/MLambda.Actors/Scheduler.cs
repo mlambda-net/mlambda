@@ -50,7 +50,7 @@ namespace MLambda.Actors
         /// <summary>
         /// Gets a value indicating whether gets the running flag.
         /// </summary>
-        public bool IsRunning => true;
+        public bool IsRunning => !this.cancellation.IsCancellationRequested;
 
         /// <summary>
         /// Starts the mailbox dispatcher.
@@ -86,6 +86,11 @@ namespace MLambda.Actors
             while (!this.cancellation.IsCancellationRequested)
             {
                 var message = this.mailBox.Take();
+                if (message == null)
+                {
+                    break;
+                }
+
                 this.observer?.Invoke(message);
             }
         }

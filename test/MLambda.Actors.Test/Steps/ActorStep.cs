@@ -17,6 +17,7 @@ namespace MLambda.Actors.Test.Steps
 {
     using System;
     using System.Reactive.Linq;
+    using System.Threading.Tasks;
     using MLambda.Actors.Abstraction.Context;
     using MLambda.Actors.Test.Actors;
     using TechTalk.SpecFlow;
@@ -37,7 +38,7 @@ namespace MLambda.Actors.Test.Steps
         }
 
         [When(@"Create the actor")]
-        public async void WhenCreateTheActor()
+        public async Task WhenCreateTheActor()
         {
             var address = await this.user.Spawn<ConsoleActor>();
             await address.Send("Hello World");
