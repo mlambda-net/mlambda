@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="All" />
+        <PackageReference Include="System.Reactive" Version="6.0.1" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\MLambda.Actors.Abstraction\MLambda.Actors.Abstraction.csproj" />
+        <ProjectReference Include="..\MLambda.Actors.Network.Abstraction\MLambda.Actors.Network.Abstraction.csproj" />
+        <ProjectReference Include="..\MLambda.Actors.Remote.Abstraction\MLambda.Actors.Remote.Abstraction.csproj" />
+        <ProjectReference Include="..\MLambda.Actors.Gossip.Abstraction\MLambda.Actors.Gossip.Abstraction.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <AdditionalFiles Include="..\..\stylecop.json" />
+    </ItemGroup>
+</Project>
