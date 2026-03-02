@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Title>MLambda Saga</Title>
         <Authors>MLambda</Authors>
         <Description>MLambda Saga</Description>

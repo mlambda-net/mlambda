@@ -16,7 +16,7 @@
 namespace MLambda.Saga.Test.Steps
 {
     using MLambda.Saga.Abstraction;
-    using TechTalk.SpecFlow;
+    using Reqnroll;
 
     [Binding]
     public class SagaSteps

@@ -23,7 +23,7 @@ namespace MLambda.Actors.Test.Steps
     using MLambda.Actors.Guardian.Messages;
     using MLambda.Actors.Test.Actors;
     using Shouldly;
-    using TechTalk.SpecFlow;
+    using Reqnroll;
 
     [Binding]
     public class RootActorSteps

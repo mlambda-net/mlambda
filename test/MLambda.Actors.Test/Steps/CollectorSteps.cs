@@ -20,7 +20,7 @@ namespace MLambda.Actors.Test.Steps
     using MLambda.Actors.Abstraction.Context;
     using MLambda.Actors.Guardian.Messages;
     using MLambda.Actors.Test.Actors;
-    using TechTalk.SpecFlow;
+    using Reqnroll;
 
     [Binding]
     public class CollectorSteps

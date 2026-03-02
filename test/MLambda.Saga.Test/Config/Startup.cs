@@ -18,8 +18,8 @@ namespace MLambda.Actors.Test.Config
     using System;
     using System.Linq;
     using Autofac;
-    using SpecFlow.Autofac;
-    using TechTalk.SpecFlow;
+    using Reqnroll.Autofac;
+    using Reqnroll;
 
     public class Startup
     {

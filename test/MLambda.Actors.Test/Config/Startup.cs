@@ -23,8 +23,8 @@ namespace MLambda.Actors.Test.Config
     using MLambda.Actors.Abstraction.Core;
     using MLambda.Actors.Core;
     using MLambda.Actors.Test.Actors;
-    using SpecFlow.Autofac;
-    using TechTalk.SpecFlow;
+    using Reqnroll.Autofac;
+    using Reqnroll;
 
     /// <summary>
     /// The dependencies class.

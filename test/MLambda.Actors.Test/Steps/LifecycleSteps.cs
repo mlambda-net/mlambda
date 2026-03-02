@@ -21,7 +21,7 @@ namespace MLambda.Actors.Test.Steps
     using MLambda.Actors.Abstraction.Context;
     using MLambda.Actors.Test.Actors;
     using Shouldly;
-    using TechTalk.SpecFlow;
+    using Reqnroll;
 
     /// <summary>
     /// Steps for actor lifecycle hook scenarios.

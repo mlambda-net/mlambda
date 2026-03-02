@@ -24,7 +24,7 @@ namespace MLambda.Actors.Test.Steps
     using MLambda.Actors.Test.Actors;
     using MLambda.Actors.Test.Actors.Command;
     using Shouldly;
-    using TechTalk.SpecFlow;
+    using Reqnroll;
 
     /// <summary>
     /// Steps for message stashing scenarios.

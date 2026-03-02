@@ -21,7 +21,7 @@ namespace MLambda.Actors.Test.Steps
     using MLambda.Actors.Abstraction.Context;
     using MLambda.Actors.Test.Actors;
     using MLambda.Actors.Test.Actors.Command;
-    using TechTalk.SpecFlow;
+    using Reqnroll;
 
     [Binding]
     public class OneForOneSteps

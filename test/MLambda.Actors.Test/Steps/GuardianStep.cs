@@ -19,7 +19,7 @@ namespace MLambda.Actors.Test.Steps
     using System.Threading.Tasks;
     using MLambda.Actors.Abstraction;
     using MLambda.Actors.Abstraction.Core;
-    using TechTalk.SpecFlow;
+    using Reqnroll;
 
     [Binding]
     public class GuardianStep

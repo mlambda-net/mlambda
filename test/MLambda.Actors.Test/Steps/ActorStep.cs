@@ -20,7 +20,7 @@ namespace MLambda.Actors.Test.Steps
     using System.Threading.Tasks;
     using MLambda.Actors.Abstraction.Context;
     using MLambda.Actors.Test.Actors;
-    using TechTalk.SpecFlow;
+    using Reqnroll;
 
     [Binding]
     public class ActorStep
