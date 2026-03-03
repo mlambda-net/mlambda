@@ -25,15 +25,15 @@ namespace MLambda.Actors.Network.Abstraction
     public interface ITlsProvider
     {
         /// <summary>
-        /// Gets a value indicating whether TLS is enabled and certificates are available.
-        /// </summary>
-        bool IsEnabled { get; }
-
-        /// <summary>
         /// Raised when certificates have been updated (initial issue or rotation).
         /// Listeners should close existing connections to force TLS renegotiation.
         /// </summary>
         event Action CertificatesUpdated;
+
+        /// <summary>
+        /// Gets a value indicating whether TLS is enabled and certificates are available.
+        /// </summary>
+        bool IsEnabled { get; }
 
         /// <summary>
         /// Gets the server certificate used for TLS server authentication.
