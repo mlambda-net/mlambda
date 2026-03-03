@@ -2,14 +2,8 @@
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <Title>MLambda Actor Network Abstraction</Title>
-        <Authors>MLambda</Authors>
-        <Description>MLambda Actor Network Abstraction</Description>
-        <Copyright>All Rights reserved.</Copyright>
-        <PackageProjectUrl>https://actors.mlambda.net</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/RoyGI/MLambda</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>Reactive actor model</PackageTags>
-        <PackageReleaseNotes>https://github.com/RoyGI/MLambda/releases</PackageReleaseNotes>
+        <Description>Network transport abstractions for MLambda actors</Description>
+        <PackageTags>actor reactive network abstraction</PackageTags>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <DocumentationFile>bin\Debug\MLambda.Actors.Network.Abstraction.xml</DocumentationFile>

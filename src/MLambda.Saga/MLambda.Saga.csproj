@@ -2,14 +2,8 @@
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <Title>MLambda Saga</Title>
-        <Authors>MLambda</Authors>
-        <Description>MLambda Saga</Description>
-        <Copyright>All Rights reserved.</Copyright>
-        <PackageProjectUrl>https://actors.mlambda.net</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/RoyGI/MLambda</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>Reactive actor model</PackageTags>
-        <PackageReleaseNotes>https://github.com/RoyGI/MLambda/releases</PackageReleaseNotes>
+        <Description>Saga pattern implementation for distributed transactions</Description>
+        <PackageTags>actor reactive saga distributed-transactions</PackageTags>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <DocumentationFile>bin\Debug\MLambda.Saga.xml</DocumentationFile>

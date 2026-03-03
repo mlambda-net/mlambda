@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
+        <Title>MLambda Actor Satellite Abstraction</Title>
+        <Description>Abstractions for the MLambda satellite node architecture</Description>
+        <PackageTags>actor reactive satellite abstraction</PackageTags>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="System.Reactive.Observable.Aliases" Version="6.0.1" />

@@ -2,14 +2,8 @@
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <Title>MLambda Actor Cluster</Title>
-        <Authors>MLambda</Authors>
         <Description>Cluster system actors with CRDT-backed routing, delivery, and state</Description>
-        <Copyright>All Rights reserved.</Copyright>
-        <PackageProjectUrl>https://actors.mlambda.net</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/RoyGI/MLambda</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>Reactive actor model cluster CRDT</PackageTags>
-        <PackageReleaseNotes>https://github.com/RoyGI/MLambda/releases</PackageReleaseNotes>
+        <PackageTags>actor reactive cluster CRDT routing</PackageTags>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <DocumentationFile>bin\Debug\MLambda.Actors.Cluster.xml</DocumentationFile>

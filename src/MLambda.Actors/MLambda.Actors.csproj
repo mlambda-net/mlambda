@@ -2,14 +2,8 @@
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <Title>MLambda Actor</Title>
-        <Authors>MLambda</Authors>
-        <Description>MLambda Actor</Description>
-        <Copyright>All Rights reserved.</Copyright>
-        <PackageProjectUrl>https://actors.mlambda.net</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/RoyGI/MLambda</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>Reactive actor model</PackageTags>
-        <PackageReleaseNotes>https://github.com/RoyGI/MLambda/releases</PackageReleaseNotes>
+        <Description>Reactive actor model implementation for .NET</Description>
+        <PackageTags>actor reactive model concurrency</PackageTags>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <DocumentationFile>bin\Debug\MLambda.Actors.xml</DocumentationFile>

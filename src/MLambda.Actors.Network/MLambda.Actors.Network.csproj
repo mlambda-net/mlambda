@@ -2,14 +2,8 @@
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <Title>MLambda Actor Network</Title>
-        <Authors>MLambda</Authors>
-        <Description>MLambda Actor Network</Description>
-        <Copyright>All Rights reserved.</Copyright>
-        <PackageProjectUrl>https://actors.mlambda.net</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/RoyGI/MLambda</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>Reactive actor model</PackageTags>
-        <PackageReleaseNotes>https://github.com/RoyGI/MLambda/releases</PackageReleaseNotes>
+        <Description>TCP transport layer for MLambda actor communication</Description>
+        <PackageTags>actor reactive network tcp transport</PackageTags>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <DocumentationFile>bin\Debug\MLambda.Actors.Network.xml</DocumentationFile>

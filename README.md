@@ -1,15 +1,16 @@
-
-
 # [MLambda Actors](https://actors.mlambda.net)
 
-[![Build Status](https://travis-ci.com/RoyGI/MLambda.svg?branch=master)](https://travis-ci.com/RoyGI/MLambda)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=RoyGI_MLambda&metric=alert_status)](https://sonarcloud.io/dashboard?id=RoyGI_MLambda)
-[![Maintainability](https://api.codeclimate.com/v1/badges/737d19a0ea28334bf24f/maintainability)](https://codeclimate.com/github/RoyGI/MLambda/maintainability)
-[![CodeFactor](https://www.codefactor.io/repository/github/roygi/mlambda/badge)](https://www.codefactor.io/repository/github/roygi/mlambda)
+[![NuGet](https://img.shields.io/nuget/v/MLambda.Actors.svg)](https://www.nuget.org/packages/MLambda.Actors)
+[![Build and Test](https://github.com/RoyGI/MLambda/actions/workflows/build.yml/badge.svg)](https://github.com/RoyGI/MLambda/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/RoyGI/MLambda/branch/master/graph/badge.svg)](https://codecov.io/gh/RoyGI/MLambda)
-[![GuardRails badge](https://badges.guardrails.io/RoyGI/MLambda.svg?token=92ebac5e2201973fdb72dab039abe5da63bc8427d4dda67f0b33e71a15c6f06f&provider=github)](https://dashboard.guardrails.io/default/gh/RoyGI/MLambda)
 
-MLambda is a Reactive Actor Model framework for .NET. It provides a lightweight, local-only actor system with guardian hierarchy supervision, reactive message passing via System.Reactive, and a clean API built on C# pattern matching.
+MLambda is a Reactive Actor Model framework for .NET with built-in clustering, gossip protocol, and mTLS security. It provides a lightweight actor system with guardian hierarchy supervision, reactive message passing via System.Reactive, and a clean API built on C# pattern matching.
+
+## Install
+
+```bash
+dotnet add package MLambda.Actors
+```
 
 ## Features
 
@@ -254,18 +255,53 @@ public class MyActor : Actor
 }
 ```
 
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| [`MLambda.Actors.Abstraction`](https://www.nuget.org/packages/MLambda.Actors.Abstraction) | Core abstractions and interfaces |
+| [`MLambda.Actors`](https://www.nuget.org/packages/MLambda.Actors) | Actor system implementation |
+| [`MLambda.Actors.Core`](https://www.nuget.org/packages/MLambda.Actors.Core) | DI registration |
+| [`MLambda.Actors.Network`](https://www.nuget.org/packages/MLambda.Actors.Network) | TCP transport layer |
+| [`MLambda.Actors.Gossip`](https://www.nuget.org/packages/MLambda.Actors.Gossip) | Gossip protocol for cluster membership |
+| [`MLambda.Actors.Gossip.Data`](https://www.nuget.org/packages/MLambda.Actors.Gossip.Data) | CRDT data structures with replication |
+| [`MLambda.Actors.Cluster`](https://www.nuget.org/packages/MLambda.Actors.Cluster) | Cluster routing, delivery, and state |
+| [`MLambda.Actors.Satellite`](https://www.nuget.org/packages/MLambda.Actors.Satellite) | Satellite node for distributed hosting |
+| [`MLambda.Actors.Asteroids`](https://www.nuget.org/packages/MLambda.Actors.Asteroids) | Lightweight gateway node |
+| [`MLambda.Actors.Fortress`](https://www.nuget.org/packages/MLambda.Actors.Fortress) | mTLS security with auto-rotating certs |
+| [`MLambda.Actors.Monitoring`](https://www.nuget.org/packages/MLambda.Actors.Monitoring) | OpenTelemetry metrics and tracing |
+| [`MLambda.Saga`](https://www.nuget.org/packages/MLambda.Saga) | Distributed transaction sagas |
+
+## Architecture
+
+```
+Asteroid ──TCP──► Cluster ◄──Gossip──► Cluster
+                     │                     │
+                 Satellite             Satellite
+                 (Actors)              (Actors)
+```
+
+- **Cluster**: Gossip mesh + CRDT routing + service discovery
+- **Satellite**: Hosts user actors, connects to cluster
+- **Asteroid**: Lightweight gateway that routes messages to the cluster
+- **Fortress**: Optional mTLS layer with PSK bootstrap and auto-rotating X.509 certificates
+
 ## Project Structure
 
 ```
 src/
-  MLambda.Actors.Abstraction/   # Interfaces and base classes (IActor, IAddress, IContext, etc.)
-  MLambda.Actors/               # Core implementation (Process, MailBox, Scheduler, Supervision)
-  MLambda.Actors.Core/          # DI registration (AddActor extensions)
+  MLambda.Actors.Abstraction/   # Interfaces and base classes
+  MLambda.Actors/               # Core implementation
+  MLambda.Actors.Core/          # DI registration
+  MLambda.Actors.Network/       # TCP transport
+  MLambda.Actors.Gossip/        # Gossip protocol
+  MLambda.Actors.Cluster/       # Cluster system actors
+  MLambda.Actors.Satellite/     # Satellite node architecture
+  MLambda.Actors.Asteroids/     # Lightweight gateway
+  MLambda.Actors.Fortress/      # mTLS security layer
+  MLambda.Actors.Monitoring/    # OpenTelemetry integration
 test/
   MLambda.Actors.Test/          # SpecFlow BDD tests
-    Actors/                     # Sample actor implementations
-    Steps/                      # Step definitions
-    *.feature                   # Gherkin scenarios
 ```
 
 ## Testing
@@ -291,7 +327,7 @@ Feature: Message stashing with Become
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
