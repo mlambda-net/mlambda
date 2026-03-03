@@ -133,7 +133,7 @@ namespace MLambda.Actors.Gossip
             lock (this.stateLock)
             {
                 peers = this.state.Members.Values
-                    .Where(m => m.Endpoint.NodeId != this.config.LocalEndpoint.NodeId
+                    .Where(m => m.Endpoint != this.config.LocalEndpoint
                         && m.Status != MemberStatus.Down
                         && m.Status != MemberStatus.Removed)
                     .ToList();
@@ -162,6 +162,7 @@ namespace MLambda.Actors.Gossip
                 digests = this.state.Members.Values.Select(m => new GossipDigest
                 {
                     NodeId = m.Endpoint.NodeId,
+                    Port = m.Endpoint.Port,
                     HeartbeatSequence = m.HeartbeatSequence,
                 }).ToList();
             }
@@ -214,7 +215,7 @@ namespace MLambda.Actors.Gossip
             {
                 foreach (var digest in syn.Digests)
                 {
-                    if (this.state.Members.TryGetValue(digest.NodeId, out var local))
+                    if (this.state.Members.TryGetValue(digest.EndpointKey, out var local))
                     {
                         if (local.HeartbeatSequence > digest.HeartbeatSequence)
                         {
@@ -233,7 +234,7 @@ namespace MLambda.Actors.Gossip
 
                 foreach (var kvp in this.state.Members)
                 {
-                    if (!syn.Digests.Any(d => d.NodeId == kvp.Key))
+                    if (!syn.Digests.Any(d => d.EndpointKey == kvp.Key))
                     {
                         updatedMembers.Add(ToMemberState(kvp.Value));
                     }
@@ -261,7 +262,7 @@ namespace MLambda.Actors.Gossip
                 {
                     foreach (var digest in ack.RequestedDigests)
                     {
-                        if (this.state.Members.TryGetValue(digest.NodeId, out var member))
+                        if (this.state.Members.TryGetValue(digest.EndpointKey, out var member))
                         {
                             members.Add(ToMemberState(member));
                         }
@@ -285,7 +286,7 @@ namespace MLambda.Actors.Gossip
 
         private void HandleJoinRequest(JoinRequest join)
         {
-            var endpoint = new NodeEndpoint(join.NodeId, join.Host, join.Port);
+            var endpoint = new NodeEndpoint(join.NodeId, join.Port);
             var member = new Member(endpoint, MemberStatus.Joining);
 
             lock (this.stateLock)
@@ -300,7 +301,8 @@ namespace MLambda.Actors.Gossip
         {
             lock (this.stateLock)
             {
-                if (this.state.Members.TryGetValue(leave.NodeId, out var member))
+                var key = $"{leave.NodeId}:{leave.Port}";
+                if (this.state.Members.TryGetValue(key, out var member))
                 {
                     var oldStatus = member.Status;
                     member.Status = MemberStatus.Leaving;
@@ -321,13 +323,13 @@ namespace MLambda.Actors.Gossip
             var remoteState = new GossipState();
             foreach (var ms in updates)
             {
-                var endpoint = new NodeEndpoint(ms.NodeId, ms.Host, ms.Port);
+                var endpoint = new NodeEndpoint(ms.NodeId, ms.Port);
                 var member = new Member(endpoint, (MemberStatus)ms.Status)
                 {
                     HeartbeatSequence = ms.HeartbeatSequence,
                     LastSeen = new DateTimeOffset(ms.LastSeenTicks, TimeSpan.Zero),
                 };
-                remoteState.Members[ms.NodeId] = member;
+                remoteState.Members[endpoint.ToString()] = member;
             }
 
             List<(Member Member, MemberStatus OldStatus)> changes;
@@ -365,7 +367,6 @@ namespace MLambda.Actors.Gossip
             return new GossipMemberState
             {
                 NodeId = member.Endpoint.NodeId,
-                Host = member.Endpoint.Host,
                 Port = member.Endpoint.Port,
                 Status = (int)member.Status,
                 HeartbeatSequence = member.HeartbeatSequence,

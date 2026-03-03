@@ -49,6 +49,14 @@ namespace MLambda.Actors.Abstraction.Core
             where T : IActor;
 
         /// <summary>
+        /// Creates an actor address by runtime type.
+        /// </summary>
+        /// <param name="actorType">The CLR type of the actor to spawn.</param>
+        /// <param name="parent">The parent process.</param>
+        /// <returns>The address of the spawned actor.</returns>
+        IAddress SpawnByType(Type actorType, IProcess parent);
+
+        /// <summary>
         /// Releases the actor.
         /// </summary>
         /// <param name="id">the id.</param>

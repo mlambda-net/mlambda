@@ -139,7 +139,7 @@ namespace MLambda.Actors.Network.Test.Steps
                 CorrelationId = Guid.NewGuid(),
                 TargetActorId = Guid.NewGuid(),
                 SourceActorId = Guid.NewGuid(),
-                SourceNode = new NodeEndpoint(Guid.NewGuid(), "127.0.0.1", 9000),
+                SourceNode = new NodeEndpoint("127.0.0.1", 9000),
                 Type = type,
                 PayloadTypeName = "System.String",
                 PayloadBytes = new byte[] { 1, 2, 3 },
@@ -191,7 +191,7 @@ namespace MLambda.Actors.Network.Test.Steps
                 CorrelationId = Guid.NewGuid(),
                 TargetActorId = Guid.NewGuid(),
                 SourceActorId = Guid.NewGuid(),
-                SourceNode = new NodeEndpoint(Guid.NewGuid(), host, port),
+                SourceNode = new NodeEndpoint(host, port),
                 Type = type,
                 PayloadTypeName = "System.Int32",
                 PayloadBytes = new byte[] { 42 },
@@ -219,7 +219,7 @@ namespace MLambda.Actors.Network.Test.Steps
         public void ThenTheDecodedEnvelopeSourceNodeShouldBe(string host, int port)
         {
             var decoded = this.context.Get<Envelope>("decoded_envelope");
-            decoded.SourceNode.Host.ShouldBe(host);
+            decoded.SourceNode.NodeId.ShouldBe(host);
             decoded.SourceNode.Port.ShouldBe(port);
         }
     }

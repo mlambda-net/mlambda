@@ -36,6 +36,13 @@ namespace MLambda.Actors.Abstraction.Context
             where T : IActor;
 
         /// <summary>
+        /// Creates an actor proxy by runtime type.
+        /// </summary>
+        /// <param name="actorType">The CLR type of the actor to spawn.</param>
+        /// <returns>The actor proxy.</returns>
+        IObservable<IAddress> Spawn(Type actorType);
+
+        /// <summary>
         /// Watches an actor for termination.
         /// </summary>
         /// <param name="address">The address of the actor to watch.</param>

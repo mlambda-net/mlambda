@@ -31,7 +31,7 @@ namespace MLambda.Actors.Gossip
         /// </summary>
         public GossipState()
         {
-            this.Members = new Dictionary<Guid, Member>();
+            this.Members = new Dictionary<string, Member>();
             this.Version = 0;
         }
 
@@ -40,16 +40,16 @@ namespace MLambda.Actors.Gossip
         /// </summary>
         /// <param name="members">The members dictionary.</param>
         /// <param name="version">The state version.</param>
-        public GossipState(Dictionary<Guid, Member> members, long version)
+        public GossipState(Dictionary<string, Member> members, long version)
         {
-            this.Members = new Dictionary<Guid, Member>(members);
+            this.Members = new Dictionary<string, Member>(members);
             this.Version = version;
         }
 
         /// <summary>
         /// Gets the members dictionary.
         /// </summary>
-        public Dictionary<Guid, Member> Members { get; }
+        public Dictionary<string, Member> Members { get; }
 
         /// <summary>
         /// Gets the state version.
@@ -63,7 +63,7 @@ namespace MLambda.Actors.Gossip
         /// <returns>The merged state and any changed members.</returns>
         public (GossipState State, List<(Member Member, MemberStatus OldStatus)> Changes) Merge(GossipState other)
         {
-            var merged = new Dictionary<Guid, Member>(this.Members);
+            var merged = new Dictionary<string, Member>(this.Members);
             var changes = new List<(Member Member, MemberStatus OldStatus)>();
 
             foreach (var kvp in other.Members)
@@ -98,8 +98,8 @@ namespace MLambda.Actors.Gossip
         /// <returns>A new state with the member.</returns>
         public GossipState SetMember(Member member)
         {
-            var members = new Dictionary<Guid, Member>(this.Members);
-            members[member.Endpoint.NodeId] = member;
+            var members = new Dictionary<string, Member>(this.Members);
+            members[member.Endpoint.ToString()] = member;
             return new GossipState(members, this.Version + 1);
         }
     }

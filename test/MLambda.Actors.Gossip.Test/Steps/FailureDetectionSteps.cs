@@ -46,7 +46,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         {
             var detector = new PhiAccrualFailureDetector(threshold);
             this.context["detector"] = detector;
-            this.context["nodeX"] = Guid.NewGuid();
+            this.context["nodeX"] = Guid.NewGuid().ToString();
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         public void WhenHeartbeatsAreReceivedAtRegularIntervals()
         {
             var detector = this.context.Get<PhiAccrualFailureDetector>("detector");
-            var nodeId = this.context.Get<Guid>("nodeX");
+            var nodeId = this.context.Get<string>("nodeX");
 
             for (int i = 0; i < 10; i++)
             {
@@ -72,7 +72,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         public void WhenHeartbeatsAreReceivedThenStopped()
         {
             var detector = this.context.Get<PhiAccrualFailureDetector>("detector");
-            var nodeId = this.context.Get<Guid>("nodeX");
+            var nodeId = this.context.Get<string>("nodeX");
 
             for (int i = 0; i < 10; i++)
             {
@@ -97,7 +97,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         public void ThenNodeXShouldBeAvailable()
         {
             var detector = this.context.Get<PhiAccrualFailureDetector>("detector");
-            var nodeId = this.context.Get<Guid>("nodeX");
+            var nodeId = this.context.Get<string>("nodeX");
             detector.IsAvailable(nodeId).ShouldBeTrue();
         }
 
@@ -108,7 +108,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         public void ThenNodeXShouldNotBeAvailable()
         {
             var detector = this.context.Get<PhiAccrualFailureDetector>("detector");
-            var nodeId = this.context.Get<Guid>("nodeX");
+            var nodeId = this.context.Get<string>("nodeX");
             detector.IsAvailable(nodeId).ShouldBeFalse();
         }
     }

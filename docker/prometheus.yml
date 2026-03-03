@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: 'mlambda-cluster'
+    static_configs:
+      - targets:
+          - 'cluster1:9100'
+          - 'cluster2:9100'
+          - 'cluster3:9100'
+        labels:
+          role: 'cluster'
+          cluster: 'mlambda-dev'
+
+  - job_name: 'mlambda-satellite'
+    static_configs:
+      - targets:
+          - 'satellite1:9100'
+          - 'satellite2:9100'
+        labels:
+          role: 'satellite'
+          cluster: 'mlambda-dev'

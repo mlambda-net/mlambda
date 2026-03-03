@@ -140,6 +140,10 @@ namespace MLambda.Actors
         IObservable<IAddress> IUserContext.Spawn<T>() => Observable.Return(this.Spawn<T>(this.Guards.User));
 
         /// <inheritdoc/>
+        IObservable<IAddress> IUserContext.Spawn(Type actorType) =>
+            Observable.Return(this.SpawnByType(actorType, this.Guards.User));
+
+        /// <inheritdoc/>
         IObservable<IAddress> ISystemContext.Spawn<T>() => Observable.Return(this.Spawn<T>(this.Guards.System));
 
         private IProcess CreateProcess<T>(IProcess parent)
@@ -150,6 +154,21 @@ namespace MLambda.Actors
             this.processes.TryAdd(process.Id, process);
             process.Start();
             return process;
+        }
+
+        /// <summary>
+        /// Spawns an actor by runtime type under the specified parent.
+        /// </summary>
+        /// <param name="actorType">The CLR type of the actor to spawn.</param>
+        /// <param name="parent">The parent process.</param>
+        /// <returns>The address of the spawned actor.</returns>
+        public IAddress SpawnByType(Type actorType, IProcess parent)
+        {
+            var job = new WorkUnit(this.dependency, actorType);
+            var process = new Process(this, parent, job);
+            this.processes.TryAdd(process.Id, process);
+            process.Start();
+            return process.Current.Address;
         }
     }
 }

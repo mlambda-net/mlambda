@@ -33,6 +33,12 @@ namespace MLambda.Actors.Network.Abstraction
         public Guid TargetActorId { get; set; }
 
         /// <summary>
+        /// Gets or sets the target route name for route-based addressing.
+        /// When set, the receiving node resolves by route instead of actor GUID.
+        /// </summary>
+        public string TargetRoute { get; set; }
+
+        /// <summary>
         /// Gets or sets the source actor identifier.
         /// </summary>
         public Guid SourceActorId { get; set; }

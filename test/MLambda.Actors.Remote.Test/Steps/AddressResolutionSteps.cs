@@ -64,7 +64,7 @@ namespace MLambda.Actors.Remote.Test.Steps
         public void GivenAnAddressResolverWithActorXRegistered()
         {
             var actorId = Guid.NewGuid();
-            var remoteNode = new NodeEndpoint(Guid.NewGuid(), "127.0.0.1", 9001);
+            var remoteNode = new NodeEndpoint("127.0.0.1", 9001);
             var registry = new ActorRegistry();
             registry.Register(actorId, remoteNode);
 
@@ -118,7 +118,7 @@ namespace MLambda.Actors.Remote.Test.Steps
 
         private AddressResolver CreateResolver(IActorRegistry registry)
         {
-            var localNode = new NodeEndpoint(Guid.NewGuid(), "127.0.0.1", 9000);
+            var localNode = new NodeEndpoint("127.0.0.1", 9000);
             var serializer = new JsonMessageSerializer();
             var pendingRequests = new ConcurrentDictionary<Guid, TaskCompletionSource<object>>();
 

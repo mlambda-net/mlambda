@@ -40,10 +40,10 @@ namespace MLambda.Actors.Gossip.Abstraction
         IReadOnlyCollection<Member> Members { get; }
 
         /// <summary>
-        /// Gets a member by node identifier.
+        /// Gets a member by endpoint.
         /// </summary>
-        /// <param name="nodeId">The node identifier.</param>
+        /// <param name="endpoint">The node endpoint.</param>
         /// <returns>The member, or null.</returns>
-        Member GetMember(Guid nodeId);
+        Member GetMember(NodeEndpoint endpoint);
     }
 }

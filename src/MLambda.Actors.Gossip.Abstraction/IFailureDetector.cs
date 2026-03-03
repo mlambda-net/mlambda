@@ -15,8 +15,6 @@
 
 namespace MLambda.Actors.Gossip.Abstraction
 {
-    using System;
-
     /// <summary>
     /// Detects node failures using heartbeat analysis.
     /// </summary>
@@ -26,20 +24,20 @@ namespace MLambda.Actors.Gossip.Abstraction
         /// Records a heartbeat from a node.
         /// </summary>
         /// <param name="nodeId">The node identifier.</param>
-        void Heartbeat(Guid nodeId);
+        void Heartbeat(string nodeId);
 
         /// <summary>
         /// Checks if a node is considered available.
         /// </summary>
         /// <param name="nodeId">The node identifier.</param>
         /// <returns>True if available.</returns>
-        bool IsAvailable(Guid nodeId);
+        bool IsAvailable(string nodeId);
 
         /// <summary>
         /// Gets the phi (suspicion) level for a node.
         /// </summary>
         /// <param name="nodeId">The node identifier.</param>
         /// <returns>The phi value.</returns>
-        double GetSuspicionLevel(Guid nodeId);
+        double GetSuspicionLevel(string nodeId);
     }
 }

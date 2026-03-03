@@ -34,5 +34,13 @@ namespace MLambda.Actors.Abstraction.Context
         /// <returns>The actor address.</returns>
         IObservable<IAddress> Spawn<T>()
             where T : IActor;
+
+        /// <summary>
+        /// Spawns an actor by its runtime type.
+        /// Used for dynamic actor creation (e.g., by the ActorResolver).
+        /// </summary>
+        /// <param name="actorType">The CLR type of the actor to spawn.</param>
+        /// <returns>The actor address.</returns>
+        IObservable<IAddress> Spawn(Type actorType);
     }
 }

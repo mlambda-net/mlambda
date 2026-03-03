@@ -32,7 +32,7 @@ namespace MLambda.Actors.HelloWorld
             data switch
             {
                 string message => Actor.Behavior(this.Show, message),
-                _ => Actor.Ignore
+                _ => Actor.Ignore,
             };
 
         private IObservable<Unit> Show(string message)

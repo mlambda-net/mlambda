@@ -79,9 +79,9 @@ namespace MLambda.Actors.Gossip
             this.gossipProtocol.CurrentState.Members.Values.ToList().AsReadOnly();
 
         /// <inheritdoc/>
-        public Member GetMember(Guid nodeId)
+        public Member GetMember(NodeEndpoint endpoint)
         {
-            this.gossipProtocol.CurrentState.Members.TryGetValue(nodeId, out var member);
+            this.gossipProtocol.CurrentState.Members.TryGetValue(endpoint.ToString(), out var member);
             return member;
         }
 
@@ -106,7 +106,7 @@ namespace MLambda.Actors.Gossip
 
             foreach (var seed in this.config.SeedNodes)
             {
-                if (seed.NodeId != this.config.LocalEndpoint.NodeId)
+                if (seed != this.config.LocalEndpoint)
                 {
                     this.SendJoinRequest(seed);
                 }
@@ -121,11 +121,12 @@ namespace MLambda.Actors.Gossip
             var leave = new LeaveRequest
             {
                 NodeId = this.config.LocalEndpoint.NodeId,
+                Port = this.config.LocalEndpoint.Port,
             };
 
             foreach (var seed in this.config.SeedNodes)
             {
-                if (seed.NodeId != this.config.LocalEndpoint.NodeId)
+                if (seed != this.config.LocalEndpoint)
                 {
                     this.SendSystemMessage(seed, leave);
                 }
@@ -169,7 +170,7 @@ namespace MLambda.Actors.Gossip
         private void IncrementHeartbeat()
         {
             var state = this.gossipProtocol.CurrentState;
-            if (state.Members.TryGetValue(this.config.LocalEndpoint.NodeId, out var self))
+            if (state.Members.TryGetValue(this.config.LocalEndpoint.ToString(), out var self))
             {
                 self.HeartbeatSequence++;
                 self.LastSeen = DateTimeOffset.UtcNow;
@@ -184,17 +185,17 @@ namespace MLambda.Actors.Gossip
 
             foreach (var member in state.Members.Values.ToList())
             {
-                if (member.Endpoint.NodeId == this.config.LocalEndpoint.NodeId)
+                if (member.Endpoint == this.config.LocalEndpoint)
                 {
                     continue;
                 }
 
                 if (member.Status == MemberStatus.Up || member.Status == MemberStatus.Joining)
                 {
-                    this.failureDetector.Heartbeat(member.Endpoint.NodeId);
+                    this.failureDetector.Heartbeat(member.Endpoint.ToString());
                 }
 
-                if (member.Status == MemberStatus.Up && !this.failureDetector.IsAvailable(member.Endpoint.NodeId))
+                if (member.Status == MemberStatus.Up && !this.failureDetector.IsAvailable(member.Endpoint.ToString()))
                 {
                     member.Status = MemberStatus.Suspect;
                     member.HeartbeatSequence++;
@@ -215,7 +216,7 @@ namespace MLambda.Actors.Gossip
                 }
 
                 if (member.Status == MemberStatus.Joining && leader != null
-                    && leader.NodeId == this.config.LocalEndpoint.NodeId)
+                    && leader == this.config.LocalEndpoint)
                 {
                     member.Status = MemberStatus.Up;
                     member.HeartbeatSequence++;
@@ -244,7 +245,7 @@ namespace MLambda.Actors.Gossip
                 {
                     case MemberStatus.Joining:
                         this.PublishEvent(new MemberJoined(member));
-                        this.failureDetector.Heartbeat(member.Endpoint.NodeId);
+                        this.failureDetector.Heartbeat(member.Endpoint.ToString());
                         break;
                     case MemberStatus.Up:
                         this.PublishEvent(new MemberUp(member));
@@ -276,7 +277,6 @@ namespace MLambda.Actors.Gossip
             var join = new JoinRequest
             {
                 NodeId = this.config.LocalEndpoint.NodeId,
-                Host = this.config.LocalEndpoint.Host,
                 Port = this.config.LocalEndpoint.Port,
             };
 

@@ -26,12 +26,22 @@ namespace MLambda.Actors.Gossip.Messages
         /// <summary>
         /// Gets or sets the node identifier.
         /// </summary>
-        public Guid NodeId { get; set; }
+        public string NodeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the port.
+        /// </summary>
+        public int Port { get; set; }
 
         /// <summary>
         /// Gets or sets the heartbeat sequence.
         /// </summary>
         public long HeartbeatSequence { get; set; }
+
+        /// <summary>
+        /// Gets the endpoint key used for dictionary lookups.
+        /// </summary>
+        public string EndpointKey => $"{this.NodeId}:{this.Port}";
     }
 
     /// <summary>
@@ -42,7 +52,7 @@ namespace MLambda.Actors.Gossip.Messages
         /// <summary>
         /// Gets or sets the sender node identifier.
         /// </summary>
-        public Guid SenderId { get; set; }
+        public string SenderId { get; set; }
 
         /// <summary>
         /// Gets or sets the state digests.
@@ -58,7 +68,7 @@ namespace MLambda.Actors.Gossip.Messages
         /// <summary>
         /// Gets or sets the sender node identifier.
         /// </summary>
-        public Guid SenderId { get; set; }
+        public string SenderId { get; set; }
 
         /// <summary>
         /// Gets or sets the updated member states.
@@ -79,7 +89,7 @@ namespace MLambda.Actors.Gossip.Messages
         /// <summary>
         /// Gets or sets the sender node identifier.
         /// </summary>
-        public Guid SenderId { get; set; }
+        public string SenderId { get; set; }
 
         /// <summary>
         /// Gets or sets the requested member states.
@@ -95,12 +105,7 @@ namespace MLambda.Actors.Gossip.Messages
         /// <summary>
         /// Gets or sets the node identifier.
         /// </summary>
-        public Guid NodeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the host.
-        /// </summary>
-        public string Host { get; set; }
+        public string NodeId { get; set; }
 
         /// <summary>
         /// Gets or sets the port.
@@ -131,12 +136,7 @@ namespace MLambda.Actors.Gossip.Messages
         /// <summary>
         /// Gets or sets the joining node identifier.
         /// </summary>
-        public Guid NodeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the joining node host.
-        /// </summary>
-        public string Host { get; set; }
+        public string NodeId { get; set; }
 
         /// <summary>
         /// Gets or sets the joining node port.
@@ -152,6 +152,11 @@ namespace MLambda.Actors.Gossip.Messages
         /// <summary>
         /// Gets or sets the leaving node identifier.
         /// </summary>
-        public Guid NodeId { get; set; }
+        public string NodeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the leaving node port.
+        /// </summary>
+        public int Port { get; set; }
     }
 }

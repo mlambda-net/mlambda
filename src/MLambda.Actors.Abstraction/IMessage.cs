@@ -15,11 +15,18 @@
 
 namespace MLambda.Actors.Abstraction
 {
+    using System;
+
     /// <summary>
     /// The message interface.
     /// </summary>
     public interface IMessage
     {
+        /// <summary>
+        /// Gets the unique request identifier for tracing and correlation.
+        /// </summary>
+        Guid RequestId { get; }
+
         /// <summary>
         /// Gets the payload of the message.
         /// </summary>

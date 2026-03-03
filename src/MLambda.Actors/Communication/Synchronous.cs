@@ -38,6 +38,11 @@ namespace MLambda.Actors.Communication
         }
 
         /// <summary>
+        /// Gets the unique request identifier for tracing and correlation.
+        /// </summary>
+        public Guid RequestId { get; } = Guid.NewGuid();
+
+        /// <summary>
         /// Gets the message.
         /// </summary>
         public object Payload { get; }

@@ -39,5 +39,15 @@ namespace MLambda.Actors.Network.Abstraction
         /// System-level message (gossip, cluster management).
         /// </summary>
         SystemMessage,
+
+        /// <summary>
+        /// Topology message for satellite registration, dispatch, and work results.
+        /// </summary>
+        Topology,
+
+        /// <summary>
+        /// CRDT state synchronization message for gossip data replication.
+        /// </summary>
+        CrdtSync,
     }
 }

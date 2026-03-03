@@ -39,8 +39,7 @@ namespace MLambda.Actors.Network
             writer.Write(envelope.TargetActorId.ToByteArray());
             writer.Write(envelope.SourceActorId.ToByteArray());
 
-            writer.Write(envelope.SourceNode.NodeId.ToByteArray());
-            writer.Write(envelope.SourceNode.Host);
+            writer.Write(envelope.SourceNode.NodeId);
             writer.Write(envelope.SourceNode.Port);
 
             writer.Write((int)envelope.Type);
@@ -68,8 +67,7 @@ namespace MLambda.Actors.Network
             var targetActorId = new Guid(reader.ReadBytes(16));
             var sourceActorId = new Guid(reader.ReadBytes(16));
 
-            var sourceNodeId = new Guid(reader.ReadBytes(16));
-            var sourceHost = reader.ReadString();
+            var sourceNodeId = reader.ReadString();
             var sourcePort = reader.ReadInt32();
 
             var type = (EnvelopeType)reader.ReadInt32();
@@ -83,7 +81,7 @@ namespace MLambda.Actors.Network
                 CorrelationId = correlationId,
                 TargetActorId = targetActorId,
                 SourceActorId = sourceActorId,
-                SourceNode = new NodeEndpoint(sourceNodeId, sourceHost, sourcePort),
+                SourceNode = new NodeEndpoint(sourceNodeId, sourcePort),
                 Type = type,
                 PayloadTypeName = payloadTypeName,
                 PayloadBytes = payloadBytes,

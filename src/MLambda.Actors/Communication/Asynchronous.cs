@@ -15,6 +15,7 @@
 
 namespace MLambda.Actors.Communication
 {
+    using System;
     using MLambda.Actors.Abstraction;
 
     /// <summary>
@@ -30,6 +31,11 @@ namespace MLambda.Actors.Communication
         {
             this.Payload = payload;
         }
+
+        /// <summary>
+        /// Gets the unique request identifier for tracing and correlation.
+        /// </summary>
+        public Guid RequestId { get; } = Guid.NewGuid();
 
         /// <summary>
         /// Gets the message.

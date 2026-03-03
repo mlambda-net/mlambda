@@ -1,0 +1,150 @@
+version: '3.8'
+
+x-common-env: &common-env
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+
+services:
+  # Cluster nodes: run RouteActor, StateActor, DeliveryActor + gossip
+  cluster1:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: mlambda-cluster1
+    environment:
+      <<: *common-env
+      NODE_ID: 00000000-0000-0000-0000-000000000001
+      NODE_TYPE: cluster
+      SEED_NODES: 00000000-0000-0000-0000-000000000002,cluster2,5000;00000000-0000-0000-0000-000000000003,cluster3,5000
+    ports:
+      - "5001:5000"
+      - "9101:9100"
+    networks:
+      - mlambda-net
+    depends_on:
+      - jaeger
+
+  cluster2:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: mlambda-cluster2
+    environment:
+      <<: *common-env
+      NODE_ID: 00000000-0000-0000-0000-000000000002
+      NODE_TYPE: cluster
+      SEED_NODES: 00000000-0000-0000-0000-000000000001,cluster1,5000;00000000-0000-0000-0000-000000000003,cluster3,5000
+    ports:
+      - "5002:5000"
+      - "9102:9100"
+    networks:
+      - mlambda-net
+    depends_on:
+      - jaeger
+
+  cluster3:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: mlambda-cluster3
+    environment:
+      <<: *common-env
+      NODE_ID: 00000000-0000-0000-0000-000000000003
+      NODE_TYPE: cluster
+      SEED_NODES: 00000000-0000-0000-0000-000000000001,cluster1,5000;00000000-0000-0000-0000-000000000002,cluster2,5000
+    ports:
+      - "5003:5000"
+      - "9103:9100"
+    networks:
+      - mlambda-net
+    depends_on:
+      - jaeger
+
+  # Satellite nodes: run WorkerActor + user actors, connect to cluster
+  satellite1:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: mlambda-satellite1
+    environment:
+      <<: *common-env
+      NODE_ID: 00000000-0000-0000-0000-000000000004
+      NODE_TYPE: satellite
+      CLUSTER_NODES: 00000000-0000-0000-0000-000000000001,cluster1,5000;00000000-0000-0000-0000-000000000002,cluster2,5000;00000000-0000-0000-0000-000000000003,cluster3,5000
+    ports:
+      - "5004:5000"
+      - "9104:9100"
+    networks:
+      - mlambda-net
+    depends_on:
+      - cluster1
+      - cluster2
+      - cluster3
+      - jaeger
+
+  satellite2:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: mlambda-satellite2
+    environment:
+      <<: *common-env
+      NODE_ID: 00000000-0000-0000-0000-000000000005
+      NODE_TYPE: satellite
+      CLUSTER_NODES: 00000000-0000-0000-0000-000000000001,cluster1,5000;00000000-0000-0000-0000-000000000002,cluster2,5000;00000000-0000-0000-0000-000000000003,cluster3,5000
+    ports:
+      - "5005:5000"
+      - "9105:9100"
+    networks:
+      - mlambda-net
+    depends_on:
+      - cluster1
+      - cluster2
+      - cluster3
+      - jaeger
+
+  # Observability
+  jaeger:
+    image: jaegertracing/jaeger:2
+    container_name: mlambda-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    networks:
+      - mlambda-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mlambda-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - mlambda-net
+    depends_on:
+      - cluster1
+      - cluster2
+      - cluster3
+      - satellite1
+      - satellite2
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mlambda-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: admin
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3000:3000"
+    networks:
+      - mlambda-net
+    depends_on:
+      - prometheus
+
+networks:
+  mlambda-net:
+    driver: bridge

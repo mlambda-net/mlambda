@@ -50,8 +50,8 @@ namespace MLambda.Actors.Remote.Test.Steps
         public void GivenARemoteAddressForActorX()
         {
             var actorId = Guid.NewGuid();
-            var targetNode = new NodeEndpoint(Guid.NewGuid(), "127.0.0.1", 9001);
-            var localNode = new NodeEndpoint(Guid.NewGuid(), "127.0.0.1", 9000);
+            var targetNode = new NodeEndpoint("127.0.0.1", 9001);
+            var localNode = new NodeEndpoint("127.0.0.1", 9000);
             var serializer = new JsonMessageSerializer();
             var pendingRequests = new ConcurrentDictionary<Guid, TaskCompletionSource<object>>();
 

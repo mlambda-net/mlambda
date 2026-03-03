@@ -127,7 +127,7 @@ namespace MLambda.Actors.Remote.Test.Steps
             var key = $"node_{name}";
             if (!this.context.ContainsKey(key))
             {
-                this.context[key] = new NodeEndpoint(Guid.NewGuid(), "127.0.0.1", 9000 + name[0]);
+                this.context[key] = new NodeEndpoint($"node-{name}", 9000 + name[0]);
             }
 
             return this.context.Get<NodeEndpoint>(key);

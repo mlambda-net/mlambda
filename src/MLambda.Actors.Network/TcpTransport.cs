@@ -35,8 +35,8 @@ namespace MLambda.Actors.Network
     {
         private readonly IEventStream eventStream;
         private readonly Subject<Envelope> incomingSubject;
-        private readonly ConcurrentDictionary<Guid, TcpClient> connectionPool;
-        private readonly ConcurrentDictionary<Guid, SemaphoreSlim> connectionLocks;
+        private readonly ConcurrentDictionary<string, TcpClient> connectionPool;
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> connectionLocks;
         private readonly object listenerLock;
 
         private TcpListener listener;
@@ -53,8 +53,8 @@ namespace MLambda.Actors.Network
             this.LocalEndpoint = localEndpoint;
             this.eventStream = eventStream;
             this.incomingSubject = new Subject<Envelope>();
-            this.connectionPool = new ConcurrentDictionary<Guid, TcpClient>();
-            this.connectionLocks = new ConcurrentDictionary<Guid, SemaphoreSlim>();
+            this.connectionPool = new ConcurrentDictionary<string, TcpClient>();
+            this.connectionLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
             this.listenerLock = new object();
         }
 
@@ -70,7 +70,7 @@ namespace MLambda.Actors.Network
             return Observable.FromAsync(async () =>
             {
                 this.cancellation = new CancellationTokenSource();
-                this.listener = new TcpListener(IPAddress.Parse(this.LocalEndpoint.Host), this.LocalEndpoint.Port);
+                this.listener = new TcpListener(IPAddress.Any, this.LocalEndpoint.Port);
                 this.listener.Start();
                 _ = this.AcceptConnectionsAsync(this.cancellation.Token);
                 await Task.CompletedTask;
@@ -117,7 +117,7 @@ namespace MLambda.Actors.Network
                 }
                 catch (IOException)
                 {
-                    this.CloseConnection(target.NodeId);
+                    this.CloseConnection(target.ToString());
                     var client = await this.GetOrCreateConnectionAsync(target);
                     var stream = client.GetStream();
                     await stream.WriteAsync(lengthPrefix, 0, 4);
@@ -126,7 +126,7 @@ namespace MLambda.Actors.Network
                 }
                 catch (SocketException)
                 {
-                    this.CloseConnection(target.NodeId);
+                    this.CloseConnection(target.ToString());
                     var client = await this.GetOrCreateConnectionAsync(target);
                     var stream = client.GetStream();
                     await stream.WriteAsync(lengthPrefix, 0, 4);
@@ -237,7 +237,7 @@ namespace MLambda.Actors.Network
                     if (remoteEndpoint == null && envelope.SourceNode != null)
                     {
                         remoteEndpoint = envelope.SourceNode;
-                        this.connectionPool.TryAdd(remoteEndpoint.NodeId, client);
+                        this.connectionPool.TryAdd(remoteEndpoint.ToString(), client);
                         this.eventStream.Publish(new ConnectionEstablished(remoteEndpoint));
                     }
 
@@ -257,7 +257,7 @@ namespace MLambda.Actors.Network
             {
                 if (remoteEndpoint != null)
                 {
-                    this.connectionPool.TryRemove(remoteEndpoint.NodeId, out _);
+                    this.connectionPool.TryRemove(remoteEndpoint.ToString(), out _);
                     this.eventStream.Publish(new ConnectionLost(remoteEndpoint));
                 }
 
@@ -267,24 +267,24 @@ namespace MLambda.Actors.Network
 
         private async Task<TcpClient> GetOrCreateConnectionAsync(NodeEndpoint target)
         {
-            if (this.connectionPool.TryGetValue(target.NodeId, out var existing) && IsConnected(existing))
+            if (this.connectionPool.TryGetValue(target.ToString(), out var existing) && IsConnected(existing))
             {
                 return existing;
             }
 
-            var connectionLock = this.connectionLocks.GetOrAdd(target.NodeId, _ => new SemaphoreSlim(1, 1));
+            var connectionLock = this.connectionLocks.GetOrAdd(target.ToString(), _ => new SemaphoreSlim(1, 1));
             await connectionLock.WaitAsync();
 
             try
             {
-                if (this.connectionPool.TryGetValue(target.NodeId, out existing) && IsConnected(existing))
+                if (this.connectionPool.TryGetValue(target.ToString(), out existing) && IsConnected(existing))
                 {
                     return existing;
                 }
 
                 if (existing != null)
                 {
-                    this.connectionPool.TryRemove(target.NodeId, out _);
+                    this.connectionPool.TryRemove(target.ToString(), out _);
                     try
                     {
                         existing.Dispose();
@@ -295,8 +295,8 @@ namespace MLambda.Actors.Network
                 }
 
                 var client = new TcpClient();
-                await client.ConnectAsync(target.Host, target.Port);
-                this.connectionPool[target.NodeId] = client;
+                await client.ConnectAsync(target.NodeId, target.Port);
+                this.connectionPool[target.ToString()] = client;
                 this.eventStream.Publish(new ConnectionEstablished(target));
 
                 _ = this.ReadConnectionAsync(client, this.cancellation.Token);
@@ -321,7 +321,7 @@ namespace MLambda.Actors.Network
             }
         }
 
-        private void CloseConnection(Guid nodeId)
+        private void CloseConnection(string nodeId)
         {
             if (this.connectionPool.TryRemove(nodeId, out var client))
             {

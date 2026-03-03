@@ -56,6 +56,13 @@ namespace MLambda.Actors.Abstraction
             where T : IActor;
 
         /// <summary>
+        /// Spawns an actor by runtime type.
+        /// </summary>
+        /// <param name="actorType">The CLR type of the actor to spawn.</param>
+        /// <returns>The address of the spawned actor.</returns>
+        IAddress Spawn(Type actorType);
+
+        /// <summary>
         /// Stops the actor.
         /// </summary>
         void Stop();

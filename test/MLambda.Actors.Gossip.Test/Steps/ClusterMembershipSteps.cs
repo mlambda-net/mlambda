@@ -50,8 +50,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         public void GivenAClusterNodeOnARandomPort(string name)
         {
             var port = PortAllocator.GetNextPort();
-            var nodeId = Guid.NewGuid();
-            var endpoint = new NodeEndpoint(nodeId, "127.0.0.1", port);
+            var endpoint = new NodeEndpoint("127.0.0.1", port);
             var eventStream = new EventStream();
             var serializer = new JsonMessageSerializer();
             var transport = new TcpTransport(endpoint, eventStream);
@@ -82,8 +81,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         public void GivenAClusterNodeOnARandomPortWithSeed(string name, string seedName)
         {
             var port = PortAllocator.GetNextPort();
-            var nodeId = Guid.NewGuid();
-            var endpoint = new NodeEndpoint(nodeId, "127.0.0.1", port);
+            var endpoint = new NodeEndpoint("127.0.0.1", port);
             var seedEndpoint = this.context.Get<NodeEndpoint>($"endpoint_{seedName}");
             var eventStream = new EventStream();
             var serializer = new JsonMessageSerializer();
@@ -182,7 +180,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
             var deadline = DateTime.UtcNow.AddSeconds(15);
             while (DateTime.UtcNow < deadline)
             {
-                var member = managerA.GetMember(endpointB.NodeId);
+                var member = managerA.GetMember(endpointB);
                 if (member != null && (member.Status == MemberStatus.Leaving
                     || member.Status == MemberStatus.Down
                     || member.Status == MemberStatus.Removed))
@@ -202,7 +200,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         {
             var managerA = this.context.Get<ClusterManager>($"manager_A");
             var endpointB = this.context.Get<NodeEndpoint>($"endpoint_B");
-            var member = managerA.GetMember(endpointB.NodeId);
+            var member = managerA.GetMember(endpointB);
             member.ShouldNotBeNull();
 
             var validStatuses = new[]

@@ -67,6 +67,16 @@ namespace MLambda.Actors
         }
 
         /// <summary>
+        /// Spawns a new actor by runtime type.
+        /// </summary>
+        /// <param name="actorType">The CLR type of the actor to spawn.</param>
+        /// <returns>The address.</returns>
+        public IObservable<IAddress> Spawn(Type actorType)
+        {
+            return Observable.Return(this.Process.Spawn(actorType));
+        }
+
+        /// <summary>
         /// Watches an actor for termination. Registers self to receive
         /// a Terminated message when the target actor stops.
         /// </summary>

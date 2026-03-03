@@ -199,6 +199,14 @@ namespace MLambda.Actors
             this.bucket.Spawn<T>(this);
 
         /// <summary>
+        /// Spawns an actor by runtime type as a child of this process.
+        /// </summary>
+        /// <param name="actorType">The CLR type of the actor to spawn.</param>
+        /// <returns>The address of the spawned actor.</returns>
+        public IAddress Spawn(Type actorType) =>
+            this.bucket.SpawnByType(actorType, this);
+
+        /// <summary>
         /// Registers a watcher for this process's termination.
         /// </summary>
         /// <param name="watcher">The address of the watching actor.</param>

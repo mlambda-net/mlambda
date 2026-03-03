@@ -29,7 +29,7 @@ namespace MLambda.Actors.Gossip
         private const int WindowSize = 100;
         private const double MinStdDeviation = 100.0;
 
-        private readonly ConcurrentDictionary<Guid, HeartbeatHistory> histories;
+        private readonly ConcurrentDictionary<string, HeartbeatHistory> histories;
         private readonly double threshold;
 
         /// <summary>
@@ -39,24 +39,24 @@ namespace MLambda.Actors.Gossip
         public PhiAccrualFailureDetector(double threshold)
         {
             this.threshold = threshold;
-            this.histories = new ConcurrentDictionary<Guid, HeartbeatHistory>();
+            this.histories = new ConcurrentDictionary<string, HeartbeatHistory>();
         }
 
         /// <inheritdoc/>
-        public void Heartbeat(Guid nodeId)
+        public void Heartbeat(string nodeId)
         {
             var history = this.histories.GetOrAdd(nodeId, _ => new HeartbeatHistory());
             history.Add(DateTimeOffset.UtcNow);
         }
 
         /// <inheritdoc/>
-        public bool IsAvailable(Guid nodeId)
+        public bool IsAvailable(string nodeId)
         {
             return this.GetSuspicionLevel(nodeId) < this.threshold;
         }
 
         /// <inheritdoc/>
-        public double GetSuspicionLevel(Guid nodeId)
+        public double GetSuspicionLevel(string nodeId)
         {
             if (!this.histories.TryGetValue(nodeId, out var history))
             {

@@ -51,8 +51,8 @@ namespace MLambda.Actors.Network.Test.Steps
             var portA = PortAllocator.GetNextPort();
             var portB = PortAllocator.GetNextPort();
 
-            var endpointA = new NodeEndpoint(Guid.NewGuid(), "127.0.0.1", portA);
-            var endpointB = new NodeEndpoint(Guid.NewGuid(), "127.0.0.1", portB);
+            var endpointA = new NodeEndpoint("127.0.0.1", portA);
+            var endpointB = new NodeEndpoint("127.0.0.1", portB);
 
             var eventStreamA = new MLambda.Actors.EventStream();
             var eventStreamB = new MLambda.Actors.EventStream();

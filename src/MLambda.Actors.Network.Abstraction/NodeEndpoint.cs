@@ -19,31 +19,25 @@ namespace MLambda.Actors.Network.Abstraction
 
     /// <summary>
     /// Represents a network endpoint for a node in the actor cluster.
+    /// The NodeId serves as both the unique identifier and the hostname.
     /// </summary>
     public sealed class NodeEndpoint : IEquatable<NodeEndpoint>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="NodeEndpoint"/> class.
         /// </summary>
-        /// <param name="nodeId">The unique node identifier.</param>
-        /// <param name="host">The host address.</param>
+        /// <param name="nodeId">The friendly node name, also used as the hostname.</param>
         /// <param name="port">The port number.</param>
-        public NodeEndpoint(Guid nodeId, string host, int port)
+        public NodeEndpoint(string nodeId, int port)
         {
             this.NodeId = nodeId;
-            this.Host = host;
             this.Port = port;
         }
 
         /// <summary>
-        /// Gets the unique node identifier.
+        /// Gets the unique node identifier (also the hostname).
         /// </summary>
-        public Guid NodeId { get; }
-
-        /// <summary>
-        /// Gets the host address.
-        /// </summary>
-        public string Host { get; }
+        public string NodeId { get; }
 
         /// <summary>
         /// Gets the port number.
@@ -80,7 +74,8 @@ namespace MLambda.Actors.Network.Abstraction
                 return false;
             }
 
-            return this.NodeId.Equals(other.NodeId);
+            return string.Equals(this.NodeId, other.NodeId, StringComparison.Ordinal)
+                && this.Port == other.Port;
         }
 
         /// <inheritdoc/>
@@ -92,13 +87,13 @@ namespace MLambda.Actors.Network.Abstraction
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return this.NodeId.GetHashCode();
+            return HashCode.Combine(StringComparer.Ordinal.GetHashCode(this.NodeId), this.Port);
         }
 
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{this.Host}:{this.Port} ({this.NodeId})";
+            return $"{this.NodeId}:{this.Port}";
         }
     }
 }

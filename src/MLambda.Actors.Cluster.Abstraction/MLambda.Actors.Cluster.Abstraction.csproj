@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Title>MLambda Actor Cluster Abstraction</Title>
+        <Authors>MLambda</Authors>
+        <Description>Abstraction layer for the MLambda cluster system</Description>
+        <Copyright>All Rights reserved.</Copyright>
+        <PackageProjectUrl>https://actors.mlambda.net</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/RoyGI/MLambda</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>Reactive actor model cluster</PackageTags>
+        <PackageReleaseNotes>https://github.com/RoyGI/MLambda/releases</PackageReleaseNotes>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DocumentationFile>bin\Debug\MLambda.Actors.Cluster.Abstraction.xml</DocumentationFile>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DocumentationFile>bin\Release\MLambda.Actors.Cluster.Abstraction.xml</DocumentationFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="All" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\MLambda.Actors.Abstraction\MLambda.Actors.Abstraction.csproj" />
+        <ProjectReference Include="..\MLambda.Actors.Network.Abstraction\MLambda.Actors.Network.Abstraction.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <AdditionalFiles Include="..\..\stylecop.json">
+            <Link>stylecop.json</Link>
+        </AdditionalFiles>
+    </ItemGroup>
+</Project>

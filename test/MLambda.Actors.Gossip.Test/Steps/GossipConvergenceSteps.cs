@@ -47,7 +47,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         public void GivenAGossipStateWithMemberAsStatus(string name, string status)
         {
             var nodeId = this.GetOrCreateNodeId(name);
-            var endpoint = new NodeEndpoint(nodeId, "127.0.0.1", 9000);
+            var endpoint = new NodeEndpoint(nodeId, 9000);
             var memberStatus = Enum.Parse<MemberStatus>(status);
             var member = new Member(endpoint, memberStatus);
             var state = new GossipState();
@@ -64,7 +64,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         public void GivenAnotherGossipStateWithMemberAsStatus(string name, string status)
         {
             var nodeId = this.GetOrCreateNodeId(name);
-            var endpoint = new NodeEndpoint(nodeId, "127.0.0.1", 9001);
+            var endpoint = new NodeEndpoint(nodeId, 9001);
             var memberStatus = Enum.Parse<MemberStatus>(status);
             var member = new Member(endpoint, memberStatus);
             var state = new GossipState();
@@ -82,7 +82,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         public void GivenAGossipStateWithMemberHeartbeatStatus(string name, int heartbeat, string status)
         {
             var nodeId = this.GetOrCreateNodeId(name);
-            var endpoint = new NodeEndpoint(nodeId, "127.0.0.1", 9000);
+            var endpoint = new NodeEndpoint(nodeId, 9000);
             var memberStatus = Enum.Parse<MemberStatus>(status);
             var member = new Member(endpoint, memberStatus)
             {
@@ -103,7 +103,7 @@ namespace MLambda.Actors.Gossip.Test.Steps
         public void GivenAnotherGossipStateWithMemberHeartbeatStatus(string name, int heartbeat, string status)
         {
             var nodeId = this.GetOrCreateNodeId(name);
-            var endpoint = new NodeEndpoint(nodeId, "127.0.0.1", 9001);
+            var endpoint = new NodeEndpoint(nodeId, 9001);
             var memberStatus = Enum.Parse<MemberStatus>(status);
             var member = new Member(endpoint, memberStatus)
             {
@@ -146,21 +146,21 @@ namespace MLambda.Actors.Gossip.Test.Steps
         public void ThenMemberShouldHaveStatusAndHeartbeat(string name, string status, int heartbeat)
         {
             var merged = this.context.Get<GossipState>("merged");
-            var nodeId = this.context.Get<Guid>($"nodeId_{name}");
+            var nodeId = this.context.Get<string>($"nodeId_{name}");
             var member = merged.Members[nodeId];
             member.Status.ShouldBe(Enum.Parse<MemberStatus>(status));
             member.HeartbeatSequence.ShouldBe(heartbeat);
         }
 
-        private Guid GetOrCreateNodeId(string name)
+        private string GetOrCreateNodeId(string name)
         {
             var key = $"nodeId_{name}";
             if (!this.context.ContainsKey(key))
             {
-                this.context[key] = Guid.NewGuid();
+                this.context[key] = Guid.NewGuid().ToString();
             }
 
-            return this.context.Get<Guid>(key);
+            return this.context.Get<string>(key);
         }
     }
 }
