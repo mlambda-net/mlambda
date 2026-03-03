@@ -9,7 +9,8 @@
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="All" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\src\MLambda.Actors.Remote\MLambda.Actors.Remote.csproj" />
+        <ProjectReference Include="..\..\src\MLambda.Actors.Satellite\MLambda.Actors.Satellite.csproj" />
+        <ProjectReference Include="..\..\src\MLambda.Actors.Asteroids\MLambda.Actors.Asteroids.csproj" />
     </ItemGroup>
     <ItemGroup>
         <AdditionalFiles Include="..\..\stylecop.json">

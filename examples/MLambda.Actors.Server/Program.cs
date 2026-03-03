@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------------------------------------------------
+﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Program.cs" company="MLambda">
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@ namespace MLambda.Actors.Server
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using MLambda.Actors.Remote;
-    using MLambda.Actors.Remote.Abstraction;
+    using MLambda.Actors.Satellite;
+    using MLambda.Actors.Asteroids;
+    using MLambda.Actors.Satellite.Abstraction;
     using Prometheus;
 
     /// <summary>
@@ -36,19 +37,34 @@ namespace MLambda.Actors.Server
         {
             var nodeId = Environment.GetEnvironmentVariable("NODE_ID") ?? "node-1";
             var metricsPort = int.Parse(Environment.GetEnvironmentVariable("METRICS_PORT") ?? "9100");
-            var nodeType = ActorAddressConfig.ParseNodeType(Environment.GetEnvironmentVariable("NODE_TYPE"));
+            var nodeType = ActorCatalogConfig.ParseNodeType(Environment.GetEnvironmentVariable("NODE_TYPE"));
 
-            var node = ActorAddress.Build(config =>
+            IActorCatalog node;
+            if (nodeType == NodeType.Asteroid)
             {
-                config.NodeId = nodeId;
-                config.Port = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5000");
-                config.NodeType = nodeType;
-                config.SeedNodes = ActorAddressConfig.ParseSeedNodes(Environment.GetEnvironmentVariable("SEED_NODES"));
-                config.ClusterNodes = ActorAddressConfig.ParseClusterNodes(Environment.GetEnvironmentVariable("CLUSTER_NODES"));
-                config.OtlpEndpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ?? "http://localhost:4317";
-                config.Register<GreeterActor>();
-                config.Register<CalculatorActor>();
-            });
+                node = AsteroidCatalog.Build(config =>
+                {
+                    config.NodeId = nodeId;
+                    config.Port = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5000");
+                    config.NodeType = nodeType;
+                    config.ClusterNodes = ActorCatalogConfig.ParseClusterNodes(Environment.GetEnvironmentVariable("CLUSTER_NODES"));
+                    config.OtlpEndpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ?? "http://localhost:4317";
+                });
+            }
+            else
+            {
+                node = ActorCatalog.Build(config =>
+                {
+                    config.NodeId = nodeId;
+                    config.Port = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5000");
+                    config.NodeType = nodeType;
+                    config.SeedNodes = ActorCatalogConfig.ParseSeedNodes(Environment.GetEnvironmentVariable("SEED_NODES"));
+                    config.ClusterNodes = ActorCatalogConfig.ParseClusterNodes(Environment.GetEnvironmentVariable("CLUSTER_NODES"));
+                    config.OtlpEndpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ?? "http://localhost:4317";
+                    config.Register<GreeterActor>();
+                    config.Register<CalculatorActor>();
+                });
+            }
 
             Console.WriteLine($"[Node] Starting node {nodeId}");
 

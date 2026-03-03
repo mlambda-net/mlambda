@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Cronos" Version="0.8.4" />
+        <PackageReference Include="System.Reactive" Version="6.0.1" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="All" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\MLambda.Actors.Abstraction\MLambda.Actors.Abstraction.csproj" />
+        <ProjectReference Include="..\MLambda.Actors\MLambda.Actors.csproj" />
+        <ProjectReference Include="..\MLambda.Actors.Network.Abstraction\MLambda.Actors.Network.Abstraction.csproj" />
+        <ProjectReference Include="..\MLambda.Actors.Gossip.Data\MLambda.Actors.Gossip.Data.csproj" />
+        <ProjectReference Include="..\MLambda.Actors.Satellite.Abstraction\MLambda.Actors.Satellite.Abstraction.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <AdditionalFiles Include="..\..\stylecop.json">
+            <Link>stylecop.json</Link>
+        </AdditionalFiles>
+    </ItemGroup>
+</Project>

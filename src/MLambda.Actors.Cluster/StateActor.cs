@@ -24,6 +24,7 @@ namespace MLambda.Actors.Cluster
     using MLambda.Actors.Abstraction.Annotation;
     using MLambda.Actors.Cluster.Abstraction;
     using MLambda.Actors.Gossip.Data;
+    using MLambda.Actors.Network.Abstraction;
 
     /// <summary>
     /// Cluster-side system actor that persists messages using gossip-replicated GStacks.
@@ -33,6 +34,8 @@ namespace MLambda.Actors.Cluster
     public class StateActor : Actor
     {
         private readonly GossipDataReplicator replicator;
+        private readonly ITransport transport;
+        private readonly IMessageSerializer serializer;
         private readonly string nodeId;
         private readonly Dictionary<string, GStack<PersistMessage>> routeQueues;
 
@@ -40,9 +43,16 @@ namespace MLambda.Actors.Cluster
         /// Initializes a new instance of the <see cref="StateActor"/> class.
         /// </summary>
         /// <param name="replicator">The CRDT replicator for gossip sync.</param>
-        public StateActor(GossipDataReplicator replicator)
+        /// <param name="transport">The transport layer for sending responses.</param>
+        /// <param name="serializer">The message serializer.</param>
+        public StateActor(
+            GossipDataReplicator replicator,
+            ITransport transport,
+            IMessageSerializer serializer)
         {
             this.replicator = replicator;
+            this.transport = transport;
+            this.serializer = serializer;
             this.nodeId = "state-" + Guid.NewGuid().ToString("N").Substring(0, 8);
             this.routeQueues = new Dictionary<string, GStack<PersistMessage>>(
                 StringComparer.OrdinalIgnoreCase);
@@ -58,6 +68,8 @@ namespace MLambda.Actors.Cluster
                     this.HandleConsume, msg),
                 GetPendingMessages msg => Actor.Behavior<PendingMessagesResult, GetPendingMessages>(
                     this.HandleGetPending, msg),
+                FlushMessage msg => Actor.Behavior<Unit, FlushMessage>(
+                    this.HandleFlush, msg),
                 _ => Actor.Ignore,
             };
 
@@ -102,11 +114,48 @@ namespace MLambda.Actors.Cluster
                     .ToList();
             }
 
-            return Observable.Return(new PendingMessagesResult
+            var result = new PendingMessagesResult
             {
                 Route = msg.Route,
                 Messages = messages,
-            });
+            };
+
+            // Actively send to DeliveryActor since topology messages are
+            // fire-and-forget (Tell) and the return value would be lost.
+            this.SendLocalMessage("delivery", result);
+
+            return Observable.Return(result);
+        }
+
+        private IObservable<Unit> HandleFlush(FlushMessage msg)
+        {
+            if (this.routeQueues.TryGetValue(msg.Route, out var queue))
+            {
+                var entries = queue.PeekAll();
+                var target = entries.FirstOrDefault(e => e.Value.CorrelationId == msg.CorrelationId);
+                if (target.Value != null)
+                {
+                    queue.Pop();
+                }
+            }
+
+            return Actor.Done;
+        }
+
+        private void SendLocalMessage(string targetRoute, object message)
+        {
+            var envelope = new Envelope
+            {
+                CorrelationId = Guid.NewGuid(),
+                TargetRoute = targetRoute,
+                SourceNode = this.transport.LocalEndpoint,
+                Type = EnvelopeType.Topology,
+                PayloadTypeName = this.serializer.GetTypeName(message),
+                PayloadBytes = this.serializer.Serialize(message),
+            };
+
+            this.transport.Send(this.transport.LocalEndpoint, envelope)
+                .Subscribe(_ => { }, ex => { });
         }
     }
 }

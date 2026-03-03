@@ -48,6 +48,23 @@ namespace MLambda.Actors.Abstraction
         public static Behavior Ignore => _ => Default;
 
         /// <summary>
+        /// Creates a <see cref="StateResult"/> with <see cref="StateDecision.Flush"/>,
+        /// indicating the message was processed successfully and should be removed
+        /// from persistent storage.
+        /// </summary>
+        /// <param name="value">The response value.</param>
+        /// <returns>A <see cref="StateResult"/> with Flush decision.</returns>
+        public static StateResult Flush(object value) => new StateResult(value, StateDecision.Flush);
+
+        /// <summary>
+        /// Creates a <see cref="StateResult"/> with <see cref="StateDecision.Keep"/>,
+        /// indicating the message should be retained in persistent storage for retry.
+        /// </summary>
+        /// <param name="value">The response value.</param>
+        /// <returns>A <see cref="StateResult"/> with Keep decision.</returns>
+        public static StateResult Keep(object value) => new StateResult(value, StateDecision.Keep);
+
+        /// <summary>
         /// Gets or sets the supervisor strategy.
         /// </summary>
         public virtual ISupervisor Supervisor { get; protected set; }
@@ -56,6 +73,13 @@ namespace MLambda.Actors.Abstraction
         /// Gets or sets the stash for storing messages temporarily.
         /// </summary>
         public IStash Stash { get; set; }
+
+        /// <summary>
+        /// Gets or sets the state handler for persisting actor state snapshots.
+        /// Optional — only set by the framework when the actor opts in to the
+        /// HandleState pattern.
+        /// </summary>
+        public IStateHandler<object> StateHandler { get; set; }
 
         /// <summary>
         /// The Behavior handler for the message.

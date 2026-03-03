@@ -16,7 +16,9 @@
 namespace MLambda.Actors.Cluster
 {
     using System;
+    using System.Collections.Generic;
     using System.Reactive.Linq;
+    using MLambda.Actors.Abstraction;
     using MLambda.Actors.Abstraction.Context;
     using MLambda.Actors.Cluster.Abstraction;
     using MLambda.Actors.Gossip.Data;
@@ -40,16 +42,23 @@ namespace MLambda.Actors.Cluster
         {
             this.systemContext = systemContext;
             this.replicator = replicator;
+            this.SystemActors = new Dictionary<string, IAddress>();
         }
+
+        /// <summary>
+        /// Gets the system actor addresses spawned during <see cref="Start"/>.
+        /// Keyed by route name (e.g. "route", "state", "delivery").
+        /// </summary>
+        public IDictionary<string, IAddress> SystemActors { get; }
 
         /// <inheritdoc/>
         public void Start()
         {
             this.replicator.Start();
 
-            this.systemContext.Spawn<RouteActor>().Wait();
-            this.systemContext.Spawn<StateActor>().Wait();
-            this.systemContext.Spawn<DeliveryActor>().Wait();
+            this.SystemActors["route"] = this.systemContext.Spawn<RouteActor>().Wait();
+            this.SystemActors["state"] = this.systemContext.Spawn<StateActor>().Wait();
+            this.SystemActors["delivery"] = this.systemContext.Spawn<DeliveryActor>().Wait();
         }
 
         /// <inheritdoc/>

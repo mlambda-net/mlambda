@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+    <ItemGroup>
+        <Content Include="AsteroidRouting.feature" />
+        <Content Include="AsteroidDispatcher.feature" />
+        <Content Include="AsteroidLifecycle.feature" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="System.Reactive" Version="6.0.1" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+        <PackageReference Include="NUnit" Version="4.3.2" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+        <PackageReference Include="Shouldly" Version="4.2.1" />
+        <PackageReference Include="Moq" Version="4.20.72" />
+        <PackageReference Include="Reqnroll" Version="2.3.0" />
+        <PackageReference Include="Reqnroll.NUnit" Version="2.3.0" />
+        <PackageReference Include="Reqnroll.Tools.MsBuild.Generation" Version="2.3.0" />
+        <PackageReference Include="coverlet.collector" Version="6.0.2" />
+        <PackageReference Include="coverlet.msbuild" Version="6.0.2" />
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="All" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\MLambda.Actors.Asteroids\MLambda.Actors.Asteroids.csproj" />
+        <ProjectReference Include="..\..\src\MLambda.Actors.Satellite.Abstraction\MLambda.Actors.Satellite.Abstraction.csproj" />
+        <ProjectReference Include="..\..\src\MLambda.Actors.Abstraction\MLambda.Actors.Abstraction.csproj" />
+        <ProjectReference Include="..\..\src\MLambda.Actors\MLambda.Actors.csproj" />
+        <ProjectReference Include="..\..\src\MLambda.Actors.Network.Abstraction\MLambda.Actors.Network.Abstraction.csproj" />
+        <ProjectReference Include="..\..\src\MLambda.Actors.Network\MLambda.Actors.Network.csproj" />
+        <ProjectReference Include="..\..\src\MLambda.Actors.Cluster.Abstraction\MLambda.Actors.Cluster.Abstraction.csproj" />
+        <ProjectReference Include="..\..\src\MLambda.Actors.Satellite\MLambda.Actors.Satellite.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <AdditionalFiles Include="..\..\stylecop.json">
+            <Link>stylecop.json</Link>
+        </AdditionalFiles>
+    </ItemGroup>
+</Project>

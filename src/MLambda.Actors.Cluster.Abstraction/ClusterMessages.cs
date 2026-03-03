@@ -75,6 +75,53 @@ namespace MLambda.Actors.Cluster.Abstraction
         public NodeEndpoint SatelliteEndpoint { get; set; }
     }
 
+    // ---- Asteroid Registration Messages ----
+
+    /// <summary>
+    /// Sent by an asteroid node to register with a cluster node.
+    /// Asteroids do not host actors; they only route messages.
+    /// </summary>
+    public class AsteroidRegister
+    {
+        /// <summary>
+        /// Gets or sets the asteroid's endpoint.
+        /// </summary>
+        public NodeEndpoint AsteroidEndpoint { get; set; }
+    }
+
+    /// <summary>
+    /// Periodic heartbeat from an asteroid node to the cluster.
+    /// </summary>
+    public class AsteroidHeartbeat
+    {
+        /// <summary>
+        /// Gets or sets the asteroid's endpoint.
+        /// </summary>
+        public NodeEndpoint AsteroidEndpoint { get; set; }
+    }
+
+    /// <summary>
+    /// Indicates an asteroid node has disconnected or is shutting down.
+    /// </summary>
+    public class AsteroidDisconnected
+    {
+        /// <summary>
+        /// Gets or sets the asteroid's endpoint.
+        /// </summary>
+        public NodeEndpoint AsteroidEndpoint { get; set; }
+    }
+
+    /// <summary>
+    /// Sent by the cluster to asteroid nodes when the cluster topology changes.
+    /// </summary>
+    public class ClusterTopologyUpdate
+    {
+        /// <summary>
+        /// Gets or sets the list of active cluster node endpoints.
+        /// </summary>
+        public List<NodeEndpoint> ClusterNodes { get; set; } = new List<NodeEndpoint>();
+    }
+
     // ---- Work Dispatch Messages ----
 
     /// <summary>
@@ -111,6 +158,12 @@ namespace MLambda.Actors.Cluster.Abstraction
         /// Gets or sets a value indicating whether this is an Ask (request-response) message.
         /// </summary>
         public bool IsAsk { get; set; }
+
+        /// <summary>
+        /// Gets or sets the route parameters for parameterized routes.
+        /// Null for simple (non-parameterized) routes.
+        /// </summary>
+        public Dictionary<string, object> Parameters { get; set; }
     }
 
     /// <summary>
@@ -165,6 +218,12 @@ namespace MLambda.Actors.Cluster.Abstraction
         /// Gets or sets the originating node.
         /// </summary>
         public NodeEndpoint OriginNode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the route parameters for parameterized actor creation.
+        /// Null for simple (non-parameterized) routes.
+        /// </summary>
+        public Dictionary<string, object> Parameters { get; set; }
     }
 
     /// <summary>
@@ -321,6 +380,26 @@ namespace MLambda.Actors.Cluster.Abstraction
         /// Gets or sets the list of pending messages.
         /// </summary>
         public List<PersistMessage> Messages { get; set; } = new List<PersistMessage>();
+    }
+
+    // ---- State Flush Messages ----
+
+    /// <summary>
+    /// Sent by a satellite WorkerActor to the cluster StateActor
+    /// when an actor returns <see cref="StateDecision.Flush"/>,
+    /// indicating the persisted message should be removed from storage.
+    /// </summary>
+    public class FlushMessage
+    {
+        /// <summary>
+        /// Gets or sets the correlation ID of the message to flush.
+        /// </summary>
+        public Guid CorrelationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the route of the actor that processed the message.
+        /// </summary>
+        public string Route { get; set; }
     }
 
     // ---- Worker Response Messages ----

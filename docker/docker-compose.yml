@@ -12,9 +12,9 @@ services:
     container_name: mlambda-cluster1
     environment:
       <<: *common-env
-      NODE_ID: 00000000-0000-0000-0000-000000000001
+      NODE_ID: node1
       NODE_TYPE: cluster
-      SEED_NODES: 00000000-0000-0000-0000-000000000002,cluster2,5000;00000000-0000-0000-0000-000000000003,cluster3,5000
+      SEED_NODES: node2,cluster2,5000;node3,cluster3,5000
     ports:
       - "5001:5000"
       - "9101:9100"
@@ -30,9 +30,9 @@ services:
     container_name: mlambda-cluster2
     environment:
       <<: *common-env
-      NODE_ID: 00000000-0000-0000-0000-000000000002
+      NODE_ID: node2
       NODE_TYPE: cluster
-      SEED_NODES: 00000000-0000-0000-0000-000000000001,cluster1,5000;00000000-0000-0000-0000-000000000003,cluster3,5000
+      SEED_NODES: node1,cluster1,5000;node3,cluster3,5000
     ports:
       - "5002:5000"
       - "9102:9100"
@@ -48,9 +48,9 @@ services:
     container_name: mlambda-cluster3
     environment:
       <<: *common-env
-      NODE_ID: 00000000-0000-0000-0000-000000000003
+      NODE_ID: node3
       NODE_TYPE: cluster
-      SEED_NODES: 00000000-0000-0000-0000-000000000001,cluster1,5000;00000000-0000-0000-0000-000000000002,cluster2,5000
+      SEED_NODES: node1,cluster1,5000;node2,cluster2,5000
     ports:
       - "5003:5000"
       - "9103:9100"
@@ -67,9 +67,9 @@ services:
     container_name: mlambda-satellite1
     environment:
       <<: *common-env
-      NODE_ID: 00000000-0000-0000-0000-000000000004
+      NODE_ID: node4
       NODE_TYPE: satellite
-      CLUSTER_NODES: 00000000-0000-0000-0000-000000000001,cluster1,5000;00000000-0000-0000-0000-000000000002,cluster2,5000;00000000-0000-0000-0000-000000000003,cluster3,5000
+      CLUSTER_NODES: node1,cluster1,5000;node2,cluster2,5000;node3,cluster3,5000
     ports:
       - "5004:5000"
       - "9104:9100"
@@ -88,12 +88,34 @@ services:
     container_name: mlambda-satellite2
     environment:
       <<: *common-env
-      NODE_ID: 00000000-0000-0000-0000-000000000005
+      NODE_ID: node5
       NODE_TYPE: satellite
-      CLUSTER_NODES: 00000000-0000-0000-0000-000000000001,cluster1,5000;00000000-0000-0000-0000-000000000002,cluster2,5000;00000000-0000-0000-0000-000000000003,cluster3,5000
+      CLUSTER_NODES: node1,cluster1,5000;node2,cluster2,5000;node3,cluster3,5000
     ports:
       - "5005:5000"
       - "9105:9100"
+    networks:
+      - mlambda-net
+    depends_on:
+      - cluster1
+      - cluster2
+      - cluster3
+      - jaeger
+
+  # Asteroid nodes: lightweight gateways that route messages through the cluster
+  asteroid1:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: mlambda-asteroid1
+    environment:
+      <<: *common-env
+      NODE_ID: node6
+      NODE_TYPE: asteroid
+      CLUSTER_NODES: node1,cluster1,5000;node2,cluster2,5000;node3,cluster3,5000
+    ports:
+      - "5006:5000"
+      - "9106:9100"
     networks:
       - mlambda-net
     depends_on:
@@ -129,6 +151,7 @@ services:
       - cluster3
       - satellite1
       - satellite2
+      - asteroid1
 
   grafana:
     image: grafana/grafana:latest

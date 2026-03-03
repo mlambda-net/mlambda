@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------------------------------------------------
+﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Program.cs" company="MLambda">
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@ namespace MLambda.Actors.Client
     using System;
     using System.Reactive.Linq;
     using System.Threading.Tasks;
-    using MLambda.Actors.Remote;
-    using MLambda.Actors.Remote.Abstraction;
+    using MLambda.Actors.Satellite;
+    using MLambda.Actors.Satellite.Abstraction;
     using MLambda.Actors.Server;
 
     /// <summary>
@@ -34,11 +34,11 @@ namespace MLambda.Actors.Client
         /// <returns>An async task.</returns>
         public static async Task Main(string[] args)
         {
-            var address = ActorAddress.Build(config =>
+            var address = ActorCatalog.Build(config =>
             {
                 config.NodeId = Environment.GetEnvironmentVariable("NODE_ID") ?? "client-1";
                 config.Port = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "6000");
-                config.SeedNodes = ActorAddressConfig.ParseSeedNodes(Environment.GetEnvironmentVariable("SEED_NODES"));
+                config.SeedNodes = ActorCatalogConfig.ParseSeedNodes(Environment.GetEnvironmentVariable("SEED_NODES"));
                 config.Register<GreeterActor>();
                 config.Register<CalculatorActor>();
             });

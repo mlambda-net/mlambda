@@ -19,10 +19,13 @@ namespace MLambda.Actors.Network
     using System.Collections.Concurrent;
     using System.IO;
     using System.Net;
+    using System.Net.Security;
     using System.Net.Sockets;
     using System.Reactive;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
+    using System.Security.Authentication;
+    using System.Security.Cryptography.X509Certificates;
     using System.Threading;
     using System.Threading.Tasks;
     using MLambda.Actors.Abstraction.Core;
@@ -30,12 +33,14 @@ namespace MLambda.Actors.Network
 
     /// <summary>
     /// TCP-based transport implementation using TcpListener/TcpClient.
+    /// Supports optional mTLS via <see cref="ITlsProvider"/>.
     /// </summary>
     public class TcpTransport : ITransport
     {
         private readonly IEventStream eventStream;
+        private readonly ITlsProvider tlsProvider;
         private readonly Subject<Envelope> incomingSubject;
-        private readonly ConcurrentDictionary<string, TcpClient> connectionPool;
+        private readonly ConcurrentDictionary<string, (TcpClient Client, Stream Stream)> connectionPool;
         private readonly ConcurrentDictionary<string, SemaphoreSlim> connectionLocks;
         private readonly object listenerLock;
 
@@ -48,14 +53,21 @@ namespace MLambda.Actors.Network
         /// </summary>
         /// <param name="localEndpoint">The local endpoint to listen on.</param>
         /// <param name="eventStream">The event stream for connection events.</param>
-        public TcpTransport(NodeEndpoint localEndpoint, IEventStream eventStream)
+        /// <param name="tlsProvider">Optional TLS provider for mTLS support.</param>
+        public TcpTransport(NodeEndpoint localEndpoint, IEventStream eventStream, ITlsProvider tlsProvider = null)
         {
             this.LocalEndpoint = localEndpoint;
             this.eventStream = eventStream;
+            this.tlsProvider = tlsProvider;
             this.incomingSubject = new Subject<Envelope>();
-            this.connectionPool = new ConcurrentDictionary<string, TcpClient>();
+            this.connectionPool = new ConcurrentDictionary<string, (TcpClient, Stream)>();
             this.connectionLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
             this.listenerLock = new object();
+
+            if (this.tlsProvider != null)
+            {
+                this.tlsProvider.CertificatesUpdated += this.OnCertificatesUpdated;
+            }
         }
 
         /// <inheritdoc/>
@@ -109,8 +121,7 @@ namespace MLambda.Actors.Network
 
                 try
                 {
-                    var client = await this.GetOrCreateConnectionAsync(target);
-                    var stream = client.GetStream();
+                    var stream = await this.GetOrCreateStreamAsync(target);
                     await stream.WriteAsync(lengthPrefix, 0, 4);
                     await stream.WriteAsync(data, 0, data.Length);
                     await stream.FlushAsync();
@@ -118,8 +129,7 @@ namespace MLambda.Actors.Network
                 catch (IOException)
                 {
                     this.CloseConnection(target.ToString());
-                    var client = await this.GetOrCreateConnectionAsync(target);
-                    var stream = client.GetStream();
+                    var stream = await this.GetOrCreateStreamAsync(target);
                     await stream.WriteAsync(lengthPrefix, 0, 4);
                     await stream.WriteAsync(data, 0, data.Length);
                     await stream.FlushAsync();
@@ -127,8 +137,7 @@ namespace MLambda.Actors.Network
                 catch (SocketException)
                 {
                     this.CloseConnection(target.ToString());
-                    var client = await this.GetOrCreateConnectionAsync(target);
-                    var stream = client.GetStream();
+                    var stream = await this.GetOrCreateStreamAsync(target);
                     await stream.WriteAsync(lengthPrefix, 0, 4);
                     await stream.WriteAsync(data, 0, data.Length);
                     await stream.FlushAsync();
@@ -152,6 +161,12 @@ namespace MLambda.Actors.Network
             if (!this.disposed && disposing)
             {
                 this.disposed = true;
+
+                if (this.tlsProvider != null)
+                {
+                    this.tlsProvider.CertificatesUpdated -= this.OnCertificatesUpdated;
+                }
+
                 this.cancellation?.Cancel();
                 this.cancellation?.Dispose();
 
@@ -210,10 +225,11 @@ namespace MLambda.Actors.Network
         private async Task ReadConnectionAsync(TcpClient client, CancellationToken token)
         {
             NodeEndpoint remoteEndpoint = null;
+            Stream stream = null;
 
             try
             {
-                var stream = client.GetStream();
+                stream = await this.WrapServerStreamAsync(client);
 
                 while (!token.IsCancellationRequested && client.Connected)
                 {
@@ -237,7 +253,7 @@ namespace MLambda.Actors.Network
                     if (remoteEndpoint == null && envelope.SourceNode != null)
                     {
                         remoteEndpoint = envelope.SourceNode;
-                        this.connectionPool.TryAdd(remoteEndpoint.ToString(), client);
+                        this.connectionPool.TryAdd(remoteEndpoint.ToString(), (client, stream));
                         this.eventStream.Publish(new ConnectionEstablished(remoteEndpoint));
                     }
 
@@ -253,6 +269,9 @@ namespace MLambda.Actors.Network
             catch (ObjectDisposedException)
             {
             }
+            catch (AuthenticationException)
+            {
+            }
             finally
             {
                 if (remoteEndpoint != null)
@@ -261,15 +280,20 @@ namespace MLambda.Actors.Network
                     this.eventStream.Publish(new ConnectionLost(remoteEndpoint));
                 }
 
+                if (stream is SslStream sslStream)
+                {
+                    sslStream.Dispose();
+                }
+
                 client.Dispose();
             }
         }
 
-        private async Task<TcpClient> GetOrCreateConnectionAsync(NodeEndpoint target)
+        private async Task<Stream> GetOrCreateStreamAsync(NodeEndpoint target)
         {
-            if (this.connectionPool.TryGetValue(target.ToString(), out var existing) && IsConnected(existing))
+            if (this.connectionPool.TryGetValue(target.ToString(), out var existing) && IsConnected(existing.Client))
             {
-                return existing;
+                return existing.Stream;
             }
 
             var connectionLock = this.connectionLocks.GetOrAdd(target.ToString(), _ => new SemaphoreSlim(1, 1));
@@ -277,17 +301,22 @@ namespace MLambda.Actors.Network
 
             try
             {
-                if (this.connectionPool.TryGetValue(target.ToString(), out existing) && IsConnected(existing))
+                if (this.connectionPool.TryGetValue(target.ToString(), out existing) && IsConnected(existing.Client))
                 {
-                    return existing;
+                    return existing.Stream;
                 }
 
-                if (existing != null)
+                if (existing.Client != null)
                 {
                     this.connectionPool.TryRemove(target.ToString(), out _);
                     try
                     {
-                        existing.Dispose();
+                        if (existing.Stream is SslStream existingSsl)
+                        {
+                            existingSsl.Dispose();
+                        }
+
+                        existing.Client.Dispose();
                     }
                     catch (ObjectDisposedException)
                     {
@@ -296,17 +325,90 @@ namespace MLambda.Actors.Network
 
                 var client = new TcpClient();
                 await client.ConnectAsync(target.NodeId, target.Port);
-                this.connectionPool[target.ToString()] = client;
+
+                var stream = await this.WrapClientStreamAsync(client, target);
+                this.connectionPool[target.ToString()] = (client, stream);
                 this.eventStream.Publish(new ConnectionEstablished(target));
 
                 _ = this.ReadConnectionAsync(client, this.cancellation.Token);
 
-                return client;
+                return stream;
             }
             finally
             {
                 connectionLock.Release();
             }
+        }
+
+        private async Task<Stream> WrapServerStreamAsync(TcpClient client)
+        {
+            if (this.tlsProvider != null && this.tlsProvider.IsEnabled)
+            {
+                var serverCert = this.tlsProvider.GetServerCertificate();
+                var sslStream = new SslStream(
+                    client.GetStream(),
+                    false,
+                    (sender, cert, chain, errors) =>
+                    {
+                        if (cert == null)
+                        {
+                            return false;
+                        }
+
+                        return this.tlsProvider.ValidateRemoteCertificate(new X509Certificate2(cert));
+                    });
+
+                await sslStream.AuthenticateAsServerAsync(
+                    serverCert,
+                    clientCertificateRequired: true,
+                    checkCertificateRevocation: false);
+
+                return sslStream;
+            }
+
+            return client.GetStream();
+        }
+
+        private async Task<Stream> WrapClientStreamAsync(TcpClient client, NodeEndpoint target)
+        {
+            if (this.tlsProvider != null && this.tlsProvider.IsEnabled)
+            {
+                var clientCert = this.tlsProvider.GetClientCertificate();
+                var clientCerts = new X509CertificateCollection { clientCert };
+
+                var sslStream = new SslStream(
+                    client.GetStream(),
+                    false,
+                    (sender, cert, chain, errors) =>
+                    {
+                        if (cert == null)
+                        {
+                            return false;
+                        }
+
+                        return this.tlsProvider.ValidateRemoteCertificate(new X509Certificate2(cert));
+                    });
+
+                await sslStream.AuthenticateAsClientAsync(
+                    target.NodeId,
+                    clientCerts,
+                    checkCertificateRevocation: false);
+
+                return sslStream;
+            }
+
+            return client.GetStream();
+        }
+
+        private void OnCertificatesUpdated()
+        {
+            // Close all pooled connections to force TLS renegotiation.
+            foreach (var kvp in this.connectionPool)
+            {
+                this.CloseConnection(kvp.Key);
+            }
+
+            this.connectionPool.Clear();
         }
 
         private static bool IsConnected(TcpClient client)
@@ -323,11 +425,16 @@ namespace MLambda.Actors.Network
 
         private void CloseConnection(string nodeId)
         {
-            if (this.connectionPool.TryRemove(nodeId, out var client))
+            if (this.connectionPool.TryRemove(nodeId, out var entry))
             {
                 try
                 {
-                    client.Dispose();
+                    if (entry.Stream is SslStream ssl)
+                    {
+                        ssl.Dispose();
+                    }
+
+                    entry.Client.Dispose();
                 }
                 catch (ObjectDisposedException)
                 {
@@ -335,7 +442,7 @@ namespace MLambda.Actors.Network
             }
         }
 
-        private static async Task<int> ReadExactAsync(NetworkStream stream, byte[] buffer, int offset, int count, CancellationToken token)
+        private static async Task<int> ReadExactAsync(Stream stream, byte[] buffer, int offset, int count, CancellationToken token)
         {
             var totalRead = 0;
             while (totalRead < count)

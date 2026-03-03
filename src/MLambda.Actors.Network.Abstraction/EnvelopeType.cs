@@ -49,5 +49,10 @@ namespace MLambda.Actors.Network.Abstraction
         /// CRDT state synchronization message for gossip data replication.
         /// </summary>
         CrdtSync,
+
+        /// <summary>
+        /// Fortress security message (certificate request/response).
+        /// </summary>
+        Fortress,
     }
 }

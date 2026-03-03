@@ -38,6 +38,7 @@ namespace MLambda.Actors.Cluster
         private readonly GossipDataReplicator replicator;
         private readonly GTree<string, RouteInfo> routeTable;
         private readonly List<SatelliteInfo> satellites;
+        private readonly List<AsteroidInfo> asteroids;
         private readonly ConcurrentDictionary<string, List<DispatchWork>> pendingCreations;
         private int roundRobinIndex;
 
@@ -59,6 +60,7 @@ namespace MLambda.Actors.Cluster
                 "cluster-route-table",
                 transport.LocalEndpoint?.NodeId ?? "local");
             this.satellites = new List<SatelliteInfo>();
+            this.asteroids = new List<AsteroidInfo>();
             this.pendingCreations = new ConcurrentDictionary<string, List<DispatchWork>>(
                 StringComparer.OrdinalIgnoreCase);
             this.roundRobinIndex = 0;
@@ -80,6 +82,12 @@ namespace MLambda.Actors.Cluster
                     this.HandleDispatchWork, msg),
                 ActorCreateResult msg => Actor.Behavior<Unit, ActorCreateResult>(
                     this.HandleActorCreateResult, msg),
+                AsteroidRegister msg => Actor.Behavior<Unit, AsteroidRegister>(
+                    this.HandleAsteroidRegister, msg),
+                AsteroidHeartbeat msg => Actor.Behavior<Unit, AsteroidHeartbeat>(
+                    this.HandleAsteroidHeartbeat, msg),
+                AsteroidDisconnected msg => Actor.Behavior<Unit, AsteroidDisconnected>(
+                    this.HandleAsteroidDisconnected, msg),
                 _ => Actor.Ignore,
             };
 
@@ -216,6 +224,7 @@ namespace MLambda.Actors.Cluster
                         CorrelationId = Guid.NewGuid(),
                         TargetRoute = msg.TargetRoute,
                         OriginNode = this.transport.LocalEndpoint,
+                        Parameters = msg.Parameters,
                     };
 
                     this.SendToSatellite(satellite.Endpoint, createMsg);
@@ -323,6 +332,42 @@ namespace MLambda.Actors.Cluster
                 .Subscribe(_ => { }, ex => { });
         }
 
+        private IObservable<Unit> HandleAsteroidRegister(AsteroidRegister msg)
+        {
+            var existing = this.asteroids.Find(a => a.Endpoint == msg.AsteroidEndpoint);
+            if (existing == null)
+            {
+                this.asteroids.Add(new AsteroidInfo
+                {
+                    Endpoint = msg.AsteroidEndpoint,
+                });
+            }
+
+            return Actor.Done;
+        }
+
+        private IObservable<Unit> HandleAsteroidHeartbeat(AsteroidHeartbeat msg)
+        {
+            // Asteroids are lightweight clients; heartbeat keeps them alive in the list.
+            var asteroid = this.asteroids.Find(a => a.Endpoint == msg.AsteroidEndpoint);
+            if (asteroid == null)
+            {
+                // Auto-register on heartbeat if not already known.
+                this.asteroids.Add(new AsteroidInfo
+                {
+                    Endpoint = msg.AsteroidEndpoint,
+                });
+            }
+
+            return Actor.Done;
+        }
+
+        private IObservable<Unit> HandleAsteroidDisconnected(AsteroidDisconnected msg)
+        {
+            this.asteroids.RemoveAll(a => a.Endpoint == msg.AsteroidEndpoint);
+            return Actor.Done;
+        }
+
         /// <summary>
         /// Tracks satellite node information.
         /// </summary>
@@ -342,6 +387,17 @@ namespace MLambda.Actors.Cluster
             /// Gets or sets the current load.
             /// </summary>
             public int Load { get; set; }
+        }
+
+        /// <summary>
+        /// Tracks asteroid node information.
+        /// </summary>
+        private class AsteroidInfo
+        {
+            /// <summary>
+            /// Gets or sets the asteroid endpoint.
+            /// </summary>
+            public NodeEndpoint Endpoint { get; set; }
         }
     }
 }

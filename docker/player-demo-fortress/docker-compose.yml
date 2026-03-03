@@ -1,0 +1,72 @@
+services:
+  # Cluster node 1: gossip mesh + Fortress CA + RouteActor/StateActor/DeliveryActor
+  cluster1:
+    build:
+      context: ../..
+      dockerfile: docker/player-demo/Dockerfile
+    container_name: fortress-demo-cluster1
+    environment:
+      NODE_ID: cluster1
+      NODE_TYPE: cluster
+      PORT: "5000"
+      SEED_NODES: "cluster2,5000"
+      FORTRESS: "true"
+      FORTRESS_CLUSTER: "player-fortress"
+      FORTRESS_SECRET: "demo-fortress-secret-key"
+      FORTRESS_CLOCK: "0 */6 * * *"
+    ports:
+      - "5001:5000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - fortress-demo-net
+
+  # Cluster node 2: gossip mesh + Fortress CA + RouteActor/StateActor/DeliveryActor
+  cluster2:
+    build:
+      context: ../..
+      dockerfile: docker/player-demo/Dockerfile
+    container_name: fortress-demo-cluster2
+    environment:
+      NODE_ID: cluster2
+      NODE_TYPE: cluster
+      PORT: "5000"
+      SEED_NODES: "cluster1,5000"
+      FORTRESS: "true"
+      FORTRESS_CLUSTER: "player-fortress"
+      FORTRESS_SECRET: "demo-fortress-secret-key"
+      FORTRESS_CLOCK: "0 */6 * * *"
+    ports:
+      - "5002:5000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - fortress-demo-net
+
+  # Satellite node: WorkerActor + PlayerActor (hosts user actors, mTLS secured)
+  satellite1:
+    build:
+      context: ../..
+      dockerfile: docker/player-demo/Dockerfile
+    container_name: fortress-demo-satellite1
+    environment:
+      NODE_ID: satellite1
+      NODE_TYPE: satellite
+      PORT: "5000"
+      CLUSTER_NODES: "cluster1,5000;cluster2,5000"
+      FORTRESS: "true"
+      FORTRESS_CLUSTER: "player-fortress"
+      FORTRESS_SECRET: "demo-fortress-secret-key"
+    ports:
+      - "5003:5000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - cluster1
+      - cluster2
+    networks:
+      - fortress-demo-net
+
+networks:
+  fortress-demo-net:
+    driver: bridge

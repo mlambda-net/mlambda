@@ -43,6 +43,7 @@ namespace MLambda.Actors.Network
             writer.Write(envelope.SourceNode.Port);
 
             writer.Write((int)envelope.Type);
+            writer.Write(envelope.TargetRoute ?? string.Empty);
             writer.Write(envelope.PayloadTypeName ?? string.Empty);
 
             var payloadBytes = envelope.PayloadBytes ?? Array.Empty<byte>();
@@ -71,6 +72,7 @@ namespace MLambda.Actors.Network
             var sourcePort = reader.ReadInt32();
 
             var type = (EnvelopeType)reader.ReadInt32();
+            var targetRoute = reader.ReadString();
             var payloadTypeName = reader.ReadString();
 
             var payloadLength = reader.ReadInt32();
@@ -83,6 +85,7 @@ namespace MLambda.Actors.Network
                 SourceActorId = sourceActorId,
                 SourceNode = new NodeEndpoint(sourceNodeId, sourcePort),
                 Type = type,
+                TargetRoute = targetRoute,
                 PayloadTypeName = payloadTypeName,
                 PayloadBytes = payloadBytes,
             };

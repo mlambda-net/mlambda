@@ -44,5 +44,24 @@ namespace MLambda.Actors.Abstraction
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <returns>The response of the the actor.</returns>
         IObservable<Unit> Send<T>(T message);
+
+        /// <summary>
+        /// Sends a request message to the actor with route parameters.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="parameters">The route parameters for parameterized routes.</param>
+        /// <typeparam name="TI">The input type.</typeparam>
+        /// <typeparam name="TO">The output type.</typeparam>
+        /// <returns>The response of the actor.</returns>
+        IObservable<TO> Send<TI, TO>(TI message, Parameter parameters) => this.Send<TI, TO>(message);
+
+        /// <summary>
+        /// Tells a message to the actor with route parameters.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="parameters">The route parameters for parameterized routes.</param>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <returns>The response of the actor.</returns>
+        IObservable<Unit> Send<T>(T message, Parameter parameters) => this.Send<T>(message);
     }
 }

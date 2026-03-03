@@ -57,6 +57,28 @@ namespace MLambda.Actors.Monitoring
             });
 
         /// <summary>
+        /// Total number of state Flush decisions (message processed, remove from storage).
+        /// </summary>
+        public static readonly Counter StateFlushTotal = Metrics.CreateCounter(
+            "mlambda_actor_state_flush_total",
+            "Total number of state Flush decisions by actors.",
+            new CounterConfiguration
+            {
+                LabelNames = new[] { "route", "node_id" },
+            });
+
+        /// <summary>
+        /// Total number of state Keep decisions (message retained for retry).
+        /// </summary>
+        public static readonly Counter StateKeepTotal = Metrics.CreateCounter(
+            "mlambda_actor_state_keep_total",
+            "Total number of state Keep decisions by actors.",
+            new CounterConfiguration
+            {
+                LabelNames = new[] { "route", "node_id" },
+            });
+
+        /// <summary>
         /// Number of active actors on the node.
         /// </summary>
         public static readonly Gauge ActiveActors = Metrics.CreateGauge(

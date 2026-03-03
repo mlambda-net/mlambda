@@ -95,7 +95,33 @@ namespace MLambda.Actors.Monitoring
 
                 try
                 {
-                    message.Response(await context.Actor.Receive(message.Payload)(context));
+                    var result = await context.Actor.Receive(message.Payload)(context);
+
+                    // Unwrap StateResult: forward the inner value and record the decision.
+                    if (result is StateResult stateResult)
+                    {
+                        message.Response(stateResult.Value);
+
+                        if (stateResult.Decision == StateDecision.Flush)
+                        {
+                            ActorMetrics.StateFlushTotal
+                                .WithLabels(route, this.nodeId)
+                                .Inc();
+                        }
+                        else
+                        {
+                            ActorMetrics.StateKeepTotal
+                                .WithLabels(route, this.nodeId)
+                                .Inc();
+                        }
+
+                        activity?.SetTag("state.decision", stateResult.Decision.ToString());
+                    }
+                    else
+                    {
+                        message.Response(result);
+                    }
+
                     stopwatch.Stop();
 
                     ActorMetrics.MessagesTotal
