@@ -30,6 +30,12 @@ namespace MLambda.Actors.Network.Abstraction
         bool IsEnabled { get; }
 
         /// <summary>
+        /// Raised when certificates have been updated (initial issue or rotation).
+        /// Listeners should close existing connections to force TLS renegotiation.
+        /// </summary>
+        event Action CertificatesUpdated;
+
+        /// <summary>
         /// Gets the server certificate used for TLS server authentication.
         /// </summary>
         /// <returns>The server X.509 certificate with private key.</returns>
@@ -53,11 +59,5 @@ namespace MLambda.Actors.Network.Abstraction
         /// <param name="remoteCert">The remote certificate to validate.</param>
         /// <returns>True if the certificate is valid and trusted.</returns>
         bool ValidateRemoteCertificate(X509Certificate2 remoteCert);
-
-        /// <summary>
-        /// Raised when certificates have been updated (initial issue or rotation).
-        /// Listeners should close existing connections to force TLS renegotiation.
-        /// </summary>
-        event Action CertificatesUpdated;
     }
 }
